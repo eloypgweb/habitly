@@ -1,0 +1,78 @@
+<section class="view-panel" data-view="goals" aria-label="Goals view">
+  <article class="panel">
+    <header class="section-header">
+      <h2>Mis objetivos</h2>
+      <div class="section-actions">
+        <span class="muted-pill">Categorias</span>
+        <button id="open-goal-form" class="mini-btn" type="button" aria-label="Crear objetivo">+</button>
+      </div>
+    </header>
+
+    <div id="goals-list" class="goals-list"></div>
+  </article>
+
+  <div id="goal-create-modal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <header class="modal-header">
+        <h3>Crear objetivo</h3>
+        <button id="close-goal-form" class="icon-btn" type="button" aria-label="Close">X</button>
+      </header>
+
+      <form id="goal-create-form" class="goal-form">
+        <label>
+          <span>Nombre del objetivo</span>
+          <input id="goal-name" type="text" maxlength="60" placeholder="Ej: Estudio PAU" required />
+        </label>
+        <label>
+          <span>Horas objetivo</span>
+          <input id="goal-hours" type="number" min="1" step="0.5" value="157.5" required />
+        </label>
+        <fieldset class="goal-color-picker">
+          <legend>Color</legend>
+          <label class="goal-color-option">
+            <input type="radio" name="goal-color" value="#67c8ff" checked />
+            <span class="goal-color-swatch" style="--swatch:#67c8ff"></span>
+          </label>
+          <label class="goal-color-option">
+            <input type="radio" name="goal-color" value="#5ad89d" />
+            <span class="goal-color-swatch" style="--swatch:#5ad89d"></span>
+          </label>
+          <label class="goal-color-option">
+            <input type="radio" name="goal-color" value="#ff8a65" />
+            <span class="goal-color-swatch" style="--swatch:#ff8a65"></span>
+          </label>
+          <label class="goal-color-option">
+            <input type="radio" name="goal-color" value="#f2c94c" />
+            <span class="goal-color-swatch" style="--swatch:#f2c94c"></span>
+          </label>
+          <label class="goal-color-option">
+            <input type="radio" name="goal-color" value="#bb86fc" />
+            <span class="goal-color-swatch" style="--swatch:#bb86fc"></span>
+          </label>
+          <label class="goal-color-option">
+            <input type="radio" name="goal-color" value="#ff6b9f" />
+            <span class="goal-color-swatch" style="--swatch:#ff6b9f"></span>
+          </label>
+        </fieldset>
+        <footer class="modal-actions">
+          <button id="cancel-goal-form" class="btn" type="button">Cancelar</button>
+          <button class="btn btn-primary" type="submit">Crear objetivo</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <div id="confirm-goal-modal" class="modal" aria-hidden="true">
+    <div class="modal-card confirm-card">
+      <header class="modal-header">
+        <h3>Eliminar objetivo</h3>
+        <button id="close-confirm-goal" class="icon-btn" type="button" aria-label="Close">X</button>
+      </header>
+      <p class="confirm-copy">Se eliminara el objetivo. Las tareas vinculadas quedaran sin objetivo. Esta accion no se puede deshacer.</p>
+      <footer class="modal-actions">
+        <button id="cancel-confirm-goal" class="btn" type="button">Cancelar</button>
+        <button id="accept-confirm-goal" class="btn btn-danger" type="button">Eliminar</button>
+      </footer>
+    </div>
+  </div>
+</section>

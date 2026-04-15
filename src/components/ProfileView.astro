@@ -1,0 +1,39 @@
+<section class="view-panel" data-view="profile" aria-label="Profile view">
+  <article class="panel profile-card">
+    <header class="section-header">
+      <h2>Perfil</h2>
+      <span class="muted-pill">Personal</span>
+    </header>
+
+    <div class="profile-main">
+      <div class="avatar-wrap">
+        <img id="profile-avatar" alt="Profile avatar" hidden />
+        <div id="profile-avatar-fallback" class="avatar-fallback">?</div>
+      </div>
+
+      <div class="profile-fields">
+        <label>
+          <span>Nombre</span>
+          <input id="profile-name" type="text" maxlength="40" placeholder="Tu nombre" />
+        </label>
+
+        <div class="profile-actions">
+          <input id="profile-photo-input" type="file" accept="image/*" hidden />
+          <button class="btn" id="choose-photo-btn" type="button">Elegir foto</button>
+          <button class="btn btn-primary" id="save-profile-btn" type="button">Guardar perfil</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-summary">
+      <article class="summary-item">
+        <p class="stat-label">Tareas totales</p>
+        <p id="profile-total-tasks" class="stat-value">0</p>
+      </article>
+      <article class="summary-item">
+        <p class="stat-label">Horas completadas</p>
+        <p id="profile-total-completed" class="stat-value">0h</p>
+      </article>
+    </div>
+  </article>
+</section>

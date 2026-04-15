@@ -1,0 +1,65 @@
+<button id="fab-add-task" class="fab-add" type="button" aria-label="Add task">+</button>
+
+<div id="task-modal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <header class="modal-header">
+      <h3 id="task-form-title">Nueva tarea</h3>
+      <button id="close-task-form" class="icon-btn" type="button" aria-label="Close">X</button>
+    </header>
+
+    <form id="task-form" class="task-form">
+      <input type="hidden" id="task-id" />
+
+      <label>
+        <span>Titulo</span>
+        <input id="task-title" type="text" maxlength="90" required />
+      </label>
+
+      <label>
+        <span>Descripcion</span>
+        <textarea id="task-description" rows="3" maxlength="240"></textarea>
+      </label>
+
+      <div class="form-grid">
+        <label>
+          <span>Dia</span>
+          <select id="task-day" required></select>
+        </label>
+
+        <label>
+          <span>Hora</span>
+          <select id="task-hour" required></select>
+        </label>
+
+        <label>
+          <span>Duracion</span>
+          <input id="task-duration" type="number" min="1" max="8" step="1" value="1" required />
+        </label>
+
+        <label>
+          <span>Prioridad</span>
+          <select id="task-priority" required>
+            <option value="high">Alta</option>
+            <option value="medium" selected>Media</option>
+            <option value="low">Baja</option>
+          </select>
+        </label>
+      </div>
+
+      <label>
+        <span>Tipo</span>
+        <input id="task-type" type="text" maxlength="32" placeholder="study, personal, deporte" required />
+      </label>
+
+      <label>
+        <span>Objetivo (opcional)</span>
+        <select id="task-objective"></select>
+      </label>
+
+      <footer class="modal-actions">
+        <button id="cancel-task-form" class="btn" type="button">Cancelar</button>
+        <button class="btn btn-primary" type="submit">Guardar</button>
+      </footer>
+    </form>
+  </div>
+</div>
