@@ -684,19 +684,23 @@ body {
 .time-inputs {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
 }
 
 .time-inputs select {
   flex: 1;
   width: 100%;
+  min-width: 60px;
+  padding: 8px 6px;
 }
 
 .time-sep {
   color: var(--muted);
   font-weight: 600;
-  min-width: 8px;
+  min-width: 12px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .icon-btn {

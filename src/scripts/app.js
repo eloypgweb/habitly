@@ -21,6 +21,7 @@ const state = {
   activeTab: "today",
   monthCursor: new Date(),
   pendingGoalDeletionId: "",
+  pendingGoalEditId: "",
   pendingTaskDeletionId: "",
   filters: {
     type: "all",
@@ -368,6 +369,27 @@ function prefillTaskForm(task = null) {
   }
 }
 
+function prefillGoalForm(objective = null) {
+  if (objective) {
+    refs.taskFormTitle.textContent = "Editar objetivo";  // Reutilizamos este para el modal
+    refs.goalName.value = objective.name;
+    refs.goalDescription.value = objective.description || "";
+    // Find and check the color radio button
+    const colorInput = refs.goalColorInputs.find((input) => input.value === objective.color);
+    if (colorInput) {
+      colorInput.checked = true;
+    }
+    state.pendingGoalEditId = objective.id;
+  } else {
+    refs.taskFormTitle.textContent = "Crear objetivo";
+    refs.goalForm.reset();
+    if (refs.goalColorInputs[0]) {
+      refs.goalColorInputs[0].checked = true;
+    }
+    state.pendingGoalEditId = "";
+  }
+}
+
 function renderTypeFilter() {
   const uniqueTypes = [...new Set(state.tasks.map((task) => normalizeType(task.type)).filter(Boolean))];
   const options = ["all", ...uniqueTypes].map((type) => {
@@ -422,10 +444,11 @@ function renderTodaySummary() {
           <div class="task-footer">
             <p class="task-badge">${objectiveDot}${task.type} - ${getObjectiveName(task)}</p>
             <div class="task-actions">
-              <button class="mini-btn" type="button" data-action="toggle-task" data-task-id="${task.id}">
-                ${done ? "Desmarcar" : "Completar"}
+              <button class="mini-btn" type="button" data-action="toggle-task" data-task-id="${task.id}" title="${done ? "Desmarcar" : "Completar"}">
+                ${done ? "✓" : "○"}
               </button>
-              <button class="mini-btn" type="button" data-action="edit-task" data-task-id="${task.id}">Editar</button>
+              <button class="mini-btn" type="button" data-action="edit-task" data-task-id="${task.id}" title="Editar">✏️</button>
+              <button class="mini-btn" type="button" data-action="delete-task" data-task-id="${task.id}" title="Borrar">🗑️</button>
             </div>
           </div>
         </article>
@@ -487,11 +510,11 @@ function renderWeekOverview() {
               <p class="slot-task-meta">${objectiveDot}${getObjectiveName(task)}</p>
             </div>
             <div class="task-actions">
-              <button class="mini-btn" data-action="toggle-task" data-task-id="${task.id}" type="button">
-                ${done ? "Ok" : "Pend"}
+              <button class="mini-btn" data-action="toggle-task" data-task-id="${task.id}" type="button" title="${done ? "Desmarcar" : "Completar"}">
+                ${done ? "✓" : "○"}
               </button>
-              <button class="mini-btn" data-action="edit-task" data-task-id="${task.id}" type="button">Editar</button>
-              <button class="mini-btn" data-action="delete-task" data-task-id="${task.id}" type="button">Borrar</button>
+              <button class="mini-btn" data-action="edit-task" data-task-id="${task.id}" type="button" title="Editar">✏️</button>
+              <button class="mini-btn" data-action="delete-task" data-task-id="${task.id}" type="button" title="Borrar">🗑️</button>
             </div>
           </article>
         `;
@@ -606,7 +629,10 @@ function renderGoals() {
       <article class="goal-card" style="--goal-accent:${objective.color}">
         <header class="goal-head">
           <h3>${objective.name}</h3>
-          <button class="mini-btn" data-action="delete-goal" data-goal-id="${objective.id}" type="button">Borrar</button>
+          <div class="task-actions">
+            <button class="mini-btn" data-action="edit-goal" data-goal-id="${objective.id}" type="button" title="Editar">✏️</button>
+            <button class="mini-btn" data-action="delete-goal" data-goal-id="${objective.id}" type="button" title="Borrar">🗑️</button>
+          </div>
         </header>
 
         ${descriptionHtml}
@@ -757,17 +783,29 @@ function handleGoalSubmit(event) {
     return;
   }
 
-  state.objectives.push({
-    id: createUid(),
-    name,
-    description,
-    color,
-  });
+  if (state.pendingGoalEditId) {
+    // Update existing objective
+    const objective = state.objectives.find((obj) => obj.id === state.pendingGoalEditId);
+    if (objective) {
+      objective.name = name;
+      objective.description = description;
+      objective.color = color;
+    }
+  } else {
+    // Create new objective
+    state.objectives.push({
+      id: createUid(),
+      name,
+      description,
+      color,
+    });
+  }
 
   refs.goalForm.reset();
   if (refs.goalColorInputs[0]) {
     refs.goalColorInputs[0].checked = true;
   }
+  state.pendingGoalEditId = "";
   setGoalCreateModalOpen(false);
   saveAppState();
   renderAll();
@@ -848,6 +886,16 @@ function handleClick(event) {
 
   if (action === "delete-task") {
     promptDeleteTask(trigger.dataset.taskId);
+    return;
+  }
+
+  if (action === "edit-goal") {
+    const objective = state.objectives.find((obj) => obj.id === trigger.dataset.goalId);
+    if (!objective) {
+      return;
+    }
+    prefillGoalForm(objective);
+    setGoalCreateModalOpen(true);
     return;
   }
 
