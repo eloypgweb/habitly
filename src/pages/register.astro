@@ -23,15 +23,63 @@ import "../styles/auth.css";
           </label>
 
           <label>
-            <span>Contrasena</span>
+            <span>Usuario</span>
             <input
-              id="register-password"
-              name="password"
-              type="password"
-              minlength="6"
+              id="register-username"
+              name="username"
+              type="text"
+              minlength="3"
+              maxlength="24"
               required
-              autocomplete="new-password"
+              autocomplete="username"
+              placeholder="ej: eloy_23"
             />
+          </label>
+
+          <label>
+            <span>Contrasena</span>
+            <div class="password-row">
+              <input
+                id="register-password"
+                name="password"
+                type="password"
+                minlength="6"
+                required
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-password-btn"
+                data-toggle-password="register-password"
+                aria-label="Mostrar u ocultar contrasena"
+                aria-pressed="false"
+              >
+                👁
+              </button>
+            </div>
+          </label>
+
+          <label>
+            <span>Confirmar contrasena</span>
+            <div class="password-row">
+              <input
+                id="register-password-confirm"
+                name="password-confirm"
+                type="password"
+                minlength="6"
+                required
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-password-btn"
+                data-toggle-password="register-password-confirm"
+                aria-label="Mostrar u ocultar contrasena"
+                aria-pressed="false"
+              >
+                👁
+              </button>
+            </div>
           </label>
 
           <p id="auth-feedback" class="auth-feedback" role="status" aria-live="polite"></p>

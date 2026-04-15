@@ -2,6 +2,7 @@ import { isRemotePersistenceEnabled, loadRemoteState, saveRemoteState } from "./
 
 const STORAGE_KEY = "habitly_state_v2";
 const LEGACY_STORAGE_KEY = "habitly_state_v1";
+const STATE_SCHEMA_VERSION = 1;
 
 const DEFAULT_STATE = {
   tasks: [],
@@ -92,7 +93,15 @@ function normalizeCompletedHour(rawHour = {}) {
 }
 
 function normalizeState(parsed = {}) {
+  const schemaVersion = Number(parsed.schemaVersion ?? 0);
+  const updatedAt =
+    typeof parsed.updatedAt === "string" && parsed.updatedAt.length > 0
+      ? parsed.updatedAt
+      : new Date().toISOString();
+
   return {
+    schemaVersion: schemaVersion > 0 ? schemaVersion : STATE_SCHEMA_VERSION,
+    updatedAt,
     tasks: Array.isArray(parsed.tasks) ? parsed.tasks.map(normalizeTask) : [],
     completedHours: Array.isArray(parsed.completedHours)
       ? parsed.completedHours.map(normalizeCompletedHour)
@@ -137,12 +146,12 @@ function hasMeaningfulData(currentState) {
 
 function loadLocalState() {
   if (typeof localStorage === "undefined") {
-    return structuredClone(DEFAULT_STATE);
+    return normalizeState(DEFAULT_STATE);
   }
 
   const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
   if (!raw) {
-    return structuredClone(DEFAULT_STATE);
+    return normalizeState(DEFAULT_STATE);
   }
 
   const parsed = parseJSON(raw, DEFAULT_STATE);
@@ -184,18 +193,36 @@ export async function loadState() {
 }
 
 export async function saveState(state) {
-  const normalizedState = normalizeState(state);
+  const normalizedState = normalizeState({
+    ...state,
+    schemaVersion: STATE_SCHEMA_VERSION,
+    updatedAt: new Date().toISOString(),
+  });
   saveLocalState(normalizedState);
 
-  if (!isRemotePersistenceEnabled()) {
-    return;
+  const result = {
+    localSaved: true,
+    savedAt: normalizedState.updatedAt,
+    remote: {
+      enabled: isRemotePersistenceEnabled(),
+      synced: false,
+      error: null,
+    },
+  };
+
+  if (!result.remote.enabled) {
+    return result;
   }
 
   try {
     await saveRemoteState(normalizedState);
+    result.remote.synced = true;
   } catch (error) {
     console.warn("Habitly: failed to sync with Supabase.", error);
+    result.remote.error = error;
   }
+
+  return result;
 }
 
 export function getDefaultState() {

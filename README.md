@@ -7,7 +7,8 @@ Permite:
 - Vincular tareas a objetivos.
 - Marcar bloques horarios completados.
 - Guardar perfil basico (nombre y avatar).
-- Login y registro con email + contrasena.
+- Login con correo o usuario + contrasena.
+- Registro con correo, usuario, contrasena y confirmacion.
 - Persistir datos en localStorage y sincronizar en Supabase por usuario.
 
 ## Requisitos
@@ -45,7 +46,10 @@ El acceso a la app principal requiere iniciar sesion en `/login` o crear cuenta 
 4. En Supabase > Authentication > Sign In / Providers configura si quieres exigir confirmacion de email.
 5. Ejecuta el SQL de `supabase/schema.sql` en el SQL Editor.
 
-Con eso, cada usuario autenticado tendra su propio registro de estado en la tabla `user_states`.
+Con eso, cada usuario autenticado tendra:
+- Estado sincronizado en `user_states`.
+- Perfil de login en `profiles`.
+- Funciones RPC para login por usuario (`get_login_email`) y validacion de disponibilidad (`is_username_available`).
 
 ## Deploy en Vercel
 

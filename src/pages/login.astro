@@ -18,20 +18,38 @@ import "../styles/auth.css";
 
         <form id="login-form" class="auth-form">
           <label>
-            <span>Email</span>
-            <input id="login-email" name="email" type="email" required autocomplete="email" />
+            <span>Correo o usuario</span>
+            <input
+              id="login-identifier"
+              name="identifier"
+              type="text"
+              required
+              autocomplete="username"
+              placeholder="tu@email.com o tu_usuario"
+            />
           </label>
 
           <label>
             <span>Contrasena</span>
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              minlength="6"
-              required
-              autocomplete="current-password"
-            />
+            <div class="password-row">
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                minlength="6"
+                required
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="toggle-password-btn"
+                data-toggle-password="login-password"
+                aria-label="Mostrar u ocultar contrasena"
+                aria-pressed="false"
+              >
+                👁
+              </button>
+            </div>
           </label>
 
           <p id="auth-feedback" class="auth-feedback" role="status" aria-live="polite"></p>

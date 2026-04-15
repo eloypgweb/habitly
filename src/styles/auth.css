@@ -88,6 +88,29 @@ body {
   font-size: 16px;
 }
 
+.password-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.toggle-password-btn {
+  border: 1px solid var(--auth-border);
+  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--auth-text);
+  font-size: 1rem;
+}
+
+.toggle-password-btn[aria-pressed="true"] {
+  border-color: rgba(142, 229, 184, 0.65);
+  background: rgba(142, 229, 184, 0.16);
+}
+
 .auth-feedback {
   margin: 0;
   min-height: 1.2em;

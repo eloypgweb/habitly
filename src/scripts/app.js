@@ -15,6 +15,9 @@ const START_HOUR = 8;
 const END_HOUR = 23;
 const TAB_NAMES = ["today", "week", "month", "goals", "profile"];
 const GOAL_COLORS = ["#67c8ff", "#5ad89d", "#ff8a65", "#f2c94c", "#bb86fc", "#ff6b9f"];
+const SAVE_DEBOUNCE_MS = 700;
+const RETRY_DELAY_MS = 4000;
+const IMPORT_MAX_BYTES = 1024 * 1024 * 2;
 
 const state = {
   ...getDefaultState(),
@@ -30,6 +33,7 @@ const state = {
 
 const refs = {
   appDate: document.getElementById("app-date"),
+  syncStatus: document.getElementById("sync-status"),
   tabButtons: Array.from(document.querySelectorAll("[data-tab-trigger]")),
   views: Array.from(document.querySelectorAll("[data-view]")),
   todayTitle: document.getElementById("today-title"),
@@ -81,9 +85,19 @@ const refs = {
   profilePhotoInput: document.getElementById("profile-photo-input"),
   choosePhotoBtn: document.getElementById("choose-photo-btn"),
   saveProfileBtn: document.getElementById("save-profile-btn"),
+  exportStateBtn: document.getElementById("export-state-btn"),
+  importStateBtn: document.getElementById("import-state-btn"),
+  importStateInput: document.getElementById("import-state-input"),
   logoutBtn: document.getElementById("logout-btn"),
   profileTotalTasks: document.getElementById("profile-total-tasks"),
   profileTotalCompleted: document.getElementById("profile-total-completed"),
+};
+
+const saveQueue = {
+  saveTimer: null,
+  retryTimer: null,
+  pending: false,
+  inFlight: false,
 };
 
 function createUid() {
@@ -253,13 +267,199 @@ function getMotivationMessage(progressRatio) {
   return "Empieza por la siguiente tarea. Paso a paso.";
 }
 
-function saveAppState() {
-  void saveState({
+function buildStateSnapshot() {
+  return {
     tasks: state.tasks,
     completedHours: state.completedHours,
     objectives: state.objectives,
     profile: state.profile,
+  };
+}
+
+function setSyncStatus(status, message) {
+  if (!refs.syncStatus) {
+    return;
+  }
+
+  refs.syncStatus.dataset.syncStatus = status;
+  refs.syncStatus.textContent = message;
+}
+
+function formatSyncClock(isoDate) {
+  if (!isoDate) {
+    return "";
+  }
+
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function scheduleRetrySave() {
+  if (saveQueue.retryTimer) {
+    return;
+  }
+
+  saveQueue.retryTimer = setTimeout(() => {
+    saveQueue.retryTimer = null;
+    saveAppState({ immediate: true });
+  }, RETRY_DELAY_MS);
+}
+
+async function flushSaveQueue() {
+  if (saveQueue.inFlight || !saveQueue.pending) {
+    return;
+  }
+
+  saveQueue.pending = false;
+  saveQueue.inFlight = true;
+  setSyncStatus("syncing", "Sincronizando...");
+
+  const saveResult = await saveState(buildStateSnapshot());
+
+  if (saveResult?.remote?.error) {
+    setSyncStatus("error", "Error de sync. Reintentando...");
+    scheduleRetrySave();
+  } else {
+    if (saveQueue.retryTimer) {
+      clearTimeout(saveQueue.retryTimer);
+      saveQueue.retryTimer = null;
+    }
+
+    const timeLabel = formatSyncClock(saveResult?.savedAt);
+    if (saveResult?.remote?.enabled) {
+      setSyncStatus("ok", timeLabel ? `Sincronizado ${timeLabel}` : "Sincronizado");
+    } else {
+      setSyncStatus("local", timeLabel ? `Guardado local ${timeLabel}` : "Guardado local");
+    }
+  }
+
+  saveQueue.inFlight = false;
+  if (saveQueue.pending) {
+    void flushSaveQueue();
+  }
+}
+
+function saveAppState(options = {}) {
+  saveQueue.pending = true;
+
+  if (saveQueue.saveTimer) {
+    clearTimeout(saveQueue.saveTimer);
+    saveQueue.saveTimer = null;
+  }
+
+  const delay = options.immediate ? 0 : SAVE_DEBOUNCE_MS;
+  saveQueue.saveTimer = setTimeout(() => {
+    saveQueue.saveTimer = null;
+    void flushSaveQueue();
+  }, delay);
+}
+
+function validateImportedState(value) {
+  const payload = value && typeof value === "object" && value.payload ? value.payload : value;
+
+  if (!payload || typeof payload !== "object") {
+    throw new Error("El archivo no contiene un estado valido.");
+  }
+
+  if (!Array.isArray(payload.tasks) || !Array.isArray(payload.objectives) || !Array.isArray(payload.completedHours)) {
+    throw new Error("Formato invalido: faltan tareas, objetivos o bloques completados.");
+  }
+
+  if (!payload.profile || typeof payload.profile !== "object") {
+    throw new Error("Formato invalido: falta el perfil.");
+  }
+
+  return {
+    tasks: payload.tasks,
+    objectives: payload.objectives,
+    completedHours: payload.completedHours,
+    profile: {
+      name: String(payload.profile.name ?? ""),
+      avatarDataUrl: String(payload.profile.avatarDataUrl ?? ""),
+    },
+  };
+}
+
+function exportAppState() {
+  const exportPayload = {
+    exportedAt: new Date().toISOString(),
+    payload: buildStateSnapshot(),
+  };
+
+  const fileBlob = new Blob([JSON.stringify(exportPayload, null, 2)], {
+    type: "application/json",
   });
+
+  const url = URL.createObjectURL(fileBlob);
+  const anchor = document.createElement("a");
+  const datePart = new Date().toISOString().slice(0, 10);
+  anchor.href = url;
+  anchor.download = `habitly-backup-${datePart}.json`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+  setSyncStatus("ok", "Backup exportado.");
+}
+
+async function importAppState(file) {
+  if (!file) {
+    return;
+  }
+
+  if (file.size > IMPORT_MAX_BYTES) {
+    setSyncStatus("error", "Archivo demasiado grande. Maximo 2MB.");
+    return;
+  }
+
+  const textContent = await file.text();
+  let parsed;
+
+  try {
+    parsed = JSON.parse(textContent);
+  } catch {
+    setSyncStatus("error", "El archivo no es un JSON valido.");
+    return;
+  }
+
+  let importedState;
+  try {
+    importedState = validateImportedState(parsed);
+  } catch (error) {
+    setSyncStatus("error", error.message);
+    return;
+  }
+
+  const accepted = window.confirm("Se reemplazaran tus datos actuales por el backup. Esta accion no se puede deshacer.");
+  if (!accepted) {
+    return;
+  }
+
+  setSyncStatus("syncing", "Importando backup...");
+  const saveResult = await saveState(importedState);
+  const persistedState = await loadState();
+
+  state.tasks = persistedState.tasks;
+  state.completedHours = persistedState.completedHours;
+  state.objectives = persistedState.objectives;
+  state.profile = persistedState.profile;
+  sanitizeObjectives();
+  renderAll();
+
+  if (saveResult?.remote?.error) {
+    setSyncStatus("error", "Importado en local. Fallo al sincronizar remoto.");
+    scheduleRetrySave();
+    return;
+  }
+
+  setSyncStatus("ok", "Backup importado y sincronizado.");
 }
 
 function fillDayAndHourFields() {
@@ -1004,6 +1204,20 @@ function bindEvents() {
     readAvatarFile(selectedFile);
   });
 
+  refs.exportStateBtn.addEventListener("click", () => {
+    exportAppState();
+  });
+
+  refs.importStateBtn.addEventListener("click", () => {
+    refs.importStateInput.click();
+  });
+
+  refs.importStateInput.addEventListener("change", async (event) => {
+    const selectedFile = event.target.files?.[0];
+    await importAppState(selectedFile);
+    refs.importStateInput.value = "";
+  });
+
   refs.saveProfileBtn.addEventListener("click", () => {
     state.profile.name = refs.profileName.value.trim();
     saveAppState();
@@ -1044,8 +1258,12 @@ function migrateTasks() {
 }
 
 async function startApp() {
+  setSyncStatus("idle", "Comprobando sesion...");
+
+  let currentUser = null;
+
   try {
-    const currentUser = await getCurrentUser();
+    currentUser = await getCurrentUser();
     if (!currentUser) {
       window.location.href = "/login";
       return;
@@ -1061,13 +1279,18 @@ async function startApp() {
   state.objectives = persistedState.objectives;
   state.profile = persistedState.profile;
 
+  const usernameFromAuth = String(currentUser.user_metadata?.username ?? "").trim();
+  if (!state.profile.name && usernameFromAuth) {
+    state.profile.name = usernameFromAuth;
+  }
+
   migrateTasks();
   sanitizeObjectives();
   fillDayAndHourFields();
   fillObjectiveField();
   renderAll();
   bindEvents();
-  saveAppState();
+  saveAppState({ immediate: true });
 }
 
 void startApp();

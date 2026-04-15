@@ -9,6 +9,14 @@ function isConfigured() {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 }
 
+function normalizeIdentifier(identifier) {
+  return identifier.trim();
+}
+
+function normalizeUsername(username) {
+  return username.trim().toLowerCase();
+}
+
 function getClient() {
   if (!isConfigured()) {
     return null;
@@ -56,15 +64,71 @@ export async function getCurrentUser() {
   return data.user ?? null;
 }
 
-export async function signUpWithPassword(email, password) {
+export async function resolveUsernameAvailability(username) {
   const supabase = getClient();
   if (!supabase) {
     throw new Error("Supabase no configurado. Revisa variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY.");
   }
 
+  const normalizedUsername = normalizeUsername(username);
+
+  const { data, error } = await supabase.rpc("is_username_available", {
+    p_username: normalizedUsername,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return Boolean(data);
+}
+
+async function resolveEmailByIdentifier(identifier) {
+  const supabase = getClient();
+  if (!supabase) {
+    throw new Error("Supabase no configurado. Revisa variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY.");
+  }
+
+  const normalizedIdentifier = normalizeIdentifier(identifier);
+  if (!normalizedIdentifier) {
+    throw new Error("Debes introducir correo o usuario.");
+  }
+
+  if (normalizedIdentifier.includes("@")) {
+    return normalizedIdentifier;
+  }
+
+  const { data, error } = await supabase.rpc("get_login_email", {
+    p_username: normalizeUsername(normalizedIdentifier),
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error("No existe un usuario con ese nombre.");
+  }
+
+  return String(data);
+}
+
+export async function signUpWithPassword(email, password, username) {
+  const supabase = getClient();
+  if (!supabase) {
+    throw new Error("Supabase no configurado. Revisa variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY.");
+  }
+
+  const normalizedUsername = normalizeUsername(username);
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        username: normalizedUsername,
+      },
+    },
   });
 
   if (error) {
@@ -74,14 +138,16 @@ export async function signUpWithPassword(email, password) {
   return data;
 }
 
-export async function signInWithPassword(email, password) {
+export async function signInWithPassword(identifier, password) {
   const supabase = getClient();
   if (!supabase) {
     throw new Error("Supabase no configurado. Revisa variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY.");
   }
 
+  const resolvedEmail = await resolveEmailByIdentifier(identifier);
+
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: resolvedEmail,
     password,
   });
 
