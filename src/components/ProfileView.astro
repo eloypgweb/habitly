@@ -13,17 +13,19 @@
 
       <div class="profile-fields">
         <label>
+          <span>Correo</span>
+          <input id="profile-email" type="email" readonly />
+        </label>
+
+        <label>
           <span>Nombre</span>
           <input id="profile-name" type="text" maxlength="40" placeholder="Tu nombre" />
         </label>
 
         <div class="profile-actions">
           <input id="profile-photo-input" type="file" accept="image/*" hidden />
-          <input id="import-state-input" type="file" accept="application/json" hidden />
           <button class="btn" id="choose-photo-btn" type="button">Elegir foto</button>
           <button class="btn btn-primary" id="save-profile-btn" type="button">Guardar perfil</button>
-          <button class="btn" id="export-state-btn" type="button">Exportar datos</button>
-          <button class="btn" id="import-state-btn" type="button">Importar datos</button>
           <button class="btn btn-danger" id="logout-btn" type="button">Cerrar sesion</button>
         </div>
       </div>

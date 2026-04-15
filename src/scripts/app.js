@@ -32,6 +32,7 @@ const state = {
 };
 
 let currentUserId = "";
+let currentUserEmail = "";
 
 const refs = {
   appDate: document.getElementById("app-date"),
@@ -82,14 +83,12 @@ const refs = {
   taskType: document.getElementById("task-type"),
   taskObjective: document.getElementById("task-objective"),
   profileName: document.getElementById("profile-name"),
+  profileEmail: document.getElementById("profile-email"),
   profileAvatar: document.getElementById("profile-avatar"),
   profileAvatarFallback: document.getElementById("profile-avatar-fallback"),
   profilePhotoInput: document.getElementById("profile-photo-input"),
   choosePhotoBtn: document.getElementById("choose-photo-btn"),
   saveProfileBtn: document.getElementById("save-profile-btn"),
-  exportStateBtn: document.getElementById("export-state-btn"),
-  importStateBtn: document.getElementById("import-state-btn"),
-  importStateInput: document.getElementById("import-state-input"),
   logoutBtn: document.getElementById("logout-btn"),
   profileTotalTasks: document.getElementById("profile-total-tasks"),
   profileTotalCompleted: document.getElementById("profile-total-completed"),
@@ -863,6 +862,7 @@ function renderProfile() {
   const initial = name[0]?.toUpperCase() || "?";
 
   refs.profileName.value = state.profile?.name || "";
+  refs.profileEmail.value = currentUserEmail;
   refs.profileAvatarFallback.textContent = initial;
 
   if (avatarDataUrl) {
@@ -1206,20 +1206,6 @@ function bindEvents() {
     readAvatarFile(selectedFile);
   });
 
-  refs.exportStateBtn.addEventListener("click", () => {
-    exportAppState();
-  });
-
-  refs.importStateBtn.addEventListener("click", () => {
-    refs.importStateInput.click();
-  });
-
-  refs.importStateInput.addEventListener("change", async (event) => {
-    const selectedFile = event.target.files?.[0];
-    await importAppState(selectedFile);
-    refs.importStateInput.value = "";
-  });
-
   refs.saveProfileBtn.addEventListener("click", () => {
     state.profile.name = refs.profileName.value.trim();
     saveAppState();
@@ -1271,6 +1257,7 @@ async function startApp() {
       return;
     }
     currentUserId = currentUser.id;
+    currentUserEmail = String(currentUser.email ?? "No disponible");
   } catch {
     window.location.href = "/login";
     return;
