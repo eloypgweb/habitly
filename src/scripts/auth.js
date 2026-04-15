@@ -75,7 +75,7 @@ async function redirectIfAuthenticated() {
       window.location.href = "/";
     }
   } catch {
-    setFeedback("No se pudo validar la sesion. Revisa la configuracion de Supabase.", "error");
+    // If session lookup fails at first paint, keep page usable and only report errors on submit.
   }
 }
 

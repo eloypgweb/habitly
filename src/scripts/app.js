@@ -31,6 +31,8 @@ const state = {
   },
 };
 
+let currentUserId = "";
+
 const refs = {
   appDate: document.getElementById("app-date"),
   syncStatus: document.getElementById("sync-status"),
@@ -321,7 +323,7 @@ async function flushSaveQueue() {
   saveQueue.inFlight = true;
   setSyncStatus("syncing", "Sincronizando...");
 
-  const saveResult = await saveState(buildStateSnapshot());
+  const saveResult = await saveState(buildStateSnapshot(), currentUserId);
 
   if (saveResult?.remote?.error) {
     setSyncStatus("error", "Error de sync. Reintentando...");
@@ -443,8 +445,8 @@ async function importAppState(file) {
   }
 
   setSyncStatus("syncing", "Importando backup...");
-  const saveResult = await saveState(importedState);
-  const persistedState = await loadState();
+  const saveResult = await saveState(importedState, currentUserId);
+  const persistedState = await loadState(currentUserId);
 
   state.tasks = persistedState.tasks;
   state.completedHours = persistedState.completedHours;
@@ -1268,12 +1270,13 @@ async function startApp() {
       window.location.href = "/login";
       return;
     }
+    currentUserId = currentUser.id;
   } catch {
     window.location.href = "/login";
     return;
   }
 
-  const persistedState = await loadState();
+  const persistedState = await loadState(currentUserId);
   state.tasks = persistedState.tasks;
   state.completedHours = persistedState.completedHours;
   state.objectives = persistedState.objectives;

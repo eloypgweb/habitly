@@ -56,12 +56,12 @@ export async function getCurrentUser() {
     return null;
   }
 
-  const { data, error } = await supabase.auth.getUser();
-  if (error) {
-    throw error;
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) {
+    throw sessionError;
   }
 
-  return data.user ?? null;
+  return sessionData.session?.user ?? null;
 }
 
 export async function resolveUsernameAvailability(username) {

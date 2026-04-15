@@ -1,20 +1,12 @@
 import { isRemotePersistenceEnabled, loadRemoteState, saveRemoteState } from "./supabase.js";
 
-const STORAGE_KEY = "habitly_state_v2";
-const LEGACY_STORAGE_KEY = "habitly_state_v1";
+const STORAGE_KEY_PREFIX = "habitly_state_v2";
 const STATE_SCHEMA_VERSION = 1;
 
 const DEFAULT_STATE = {
   tasks: [],
   completedHours: [],
-  objectives: [
-    {
-      id: "obj-pau",
-      name: "Estudio PAU",
-      description: "Preparación integral para el examen PAU",
-      color: "#67c8ff",
-    },
-  ],
+  objectives: [],
   profile: {
     name: "",
     avatarDataUrl: "",
@@ -144,12 +136,20 @@ function hasMeaningfulData(currentState) {
   });
 }
 
-function loadLocalState() {
+function getStorageKey(userId) {
+  return `${STORAGE_KEY_PREFIX}_${userId}`;
+}
+
+function loadLocalState(userId) {
   if (typeof localStorage === "undefined") {
     return normalizeState(DEFAULT_STATE);
   }
 
-  const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (!userId) {
+    return normalizeState(DEFAULT_STATE);
+  }
+
+  const raw = localStorage.getItem(getStorageKey(userId));
   if (!raw) {
     return normalizeState(DEFAULT_STATE);
   }
@@ -160,15 +160,18 @@ function loadLocalState() {
   return normalized;
 }
 
-function saveLocalState(state) {
+function saveLocalState(state, userId) {
   if (typeof localStorage === "undefined") {
     return;
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (!userId) {
+    return;
+  }
+  localStorage.setItem(getStorageKey(userId), JSON.stringify(state));
 }
 
-export async function loadState() {
-  const localState = loadLocalState();
+export async function loadState(userId) {
+  const localState = loadLocalState(userId);
 
   if (!isRemotePersistenceEnabled()) {
     return localState;
@@ -178,7 +181,7 @@ export async function loadState() {
     const remotePayload = await loadRemoteState();
     if (remotePayload) {
       const remoteState = normalizeState(remotePayload);
-      saveLocalState(remoteState);
+      saveLocalState(remoteState, userId);
       return remoteState;
     }
 
@@ -192,13 +195,13 @@ export async function loadState() {
   return localState;
 }
 
-export async function saveState(state) {
+export async function saveState(state, userId) {
   const normalizedState = normalizeState({
     ...state,
     schemaVersion: STATE_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
   });
-  saveLocalState(normalizedState);
+  saveLocalState(normalizedState, userId);
 
   const result = {
     localSaved: true,
