@@ -20,46 +20,42 @@
         <textarea id="task-description" rows="3" maxlength="240"></textarea>
       </label>
 
+      <label>
+        <span>Fecha</span>
+        <input id="task-date" type="date" required />
+      </label>
+
+      <label>
+        <span>Desde</span>
+        <div class="time-inputs">
+          <select id="task-hour" required></select>
+          <span class="time-sep">:</span>
+          <select id="task-minute" required>
+            <option value="0">00</option>
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="45">45</option>
+          </select>
+        </div>
+      </label>
+
+      <label>
+        <span>Hasta</span>
+        <div class="time-inputs">
+          <select id="task-end-hour">
+            <option value="">Indefinido</option>
+          </select>
+          <span class="time-sep" id="end-time-sep" style="display:none;">:</span>
+          <select id="task-end-minute" style="display:none;">
+            <option value="0">00</option>
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="45">45</option>
+          </select>
+        </div>
+      </label>
+
       <div class="form-grid">
-        <label>
-          <span>Fecha</span>
-          <input id="task-date" type="date" required />
-        </label>
-
-        <div class="time-grid">
-          <label>
-            <span>Desde</span>
-            <div class="time-inputs">
-              <select id="task-hour" required></select>
-              <span class="time-sep">:</span>
-              <select id="task-minute" required>
-                <option value="0">00</option>
-                <option value="15">15</option>
-                <option value="30">30</option>
-                <option value="45">45</option>
-              </select>
-            </div>
-          </label>
-        </div>
-
-        <div class="time-grid">
-          <label>
-            <span>Hasta</span>
-            <div class="time-inputs">
-              <select id="task-end-hour">
-                <option value="">Indefinido</option>
-              </select>
-              <span class="time-sep" id="end-time-sep" style="display:none;">:</span>
-              <select id="task-end-minute" style="display:none;">
-                <option value="0">00</option>
-                <option value="15">15</option>
-                <option value="30">30</option>
-                <option value="45">45</option>
-              </select>
-            </div>
-          </label>
-        </div>
-
         <label>
           <span>Prioridad</span>
           <select id="task-priority" required>
@@ -68,12 +64,12 @@
             <option value="low">Baja</option>
           </select>
         </label>
-      </div>
 
-      <label>
-        <span>Tipo</span>
-        <input id="task-type" type="text" maxlength="32" placeholder="study, personal, deporte" required />
-      </label>
+        <label>
+          <span>Tipo</span>
+          <input id="task-type" type="text" maxlength="32" placeholder="study, personal, deporte" required />
+        </label>
+      </div>
 
       <label>
         <span>Objetivo (opcional)</span>
@@ -94,7 +90,7 @@
       <h3>Eliminar tarea</h3>
       <button id="close-confirm-task" class="icon-btn" type="button" aria-label="Close">X</button>
     </header>
-    <p class="confirm-copy">Se eliminará la tarea. Esta acción no se puede deshacer.</p>
+    <p class="confirm-copy">Se eliminara la tarea. Esta accion no se puede deshacer.</p>
     <footer class="modal-actions">
       <button id="cancel-confirm-task" class="btn" type="button">Cancelar</button>
       <button id="accept-confirm-task" class="btn btn-danger" type="button">Eliminar</button>
