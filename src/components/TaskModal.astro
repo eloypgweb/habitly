@@ -22,30 +22,43 @@
 
       <div class="form-grid">
         <label>
-          <span>Dia</span>
-          <select id="task-day" required></select>
+          <span>Fecha</span>
+          <input id="task-date" type="date" required />
         </label>
 
         <div class="time-grid">
           <label>
-            <span>Hora</span>
-            <select id="task-hour" required></select>
-          </label>
-          <label>
-            <span>Minuto</span>
-            <select id="task-minute" required>
-              <option value="0">00</option>
-              <option value="15">15</option>
-              <option value="30">30</option>
-              <option value="45">45</option>
-            </select>
+            <span>Desde</span>
+            <div class="time-inputs">
+              <select id="task-hour" required></select>
+              <span class="time-sep">:</span>
+              <select id="task-minute" required>
+                <option value="0">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+            </div>
           </label>
         </div>
 
-        <label>
-          <span>Duracion</span>
-          <input id="task-duration" type="number" min="1" max="8" step="1" value="1" required />
-        </label>
+        <div class="time-grid">
+          <label>
+            <span>Hasta</span>
+            <div class="time-inputs">
+              <select id="task-end-hour">
+                <option value="">Indefinido</option>
+              </select>
+              <span class="time-sep" id="end-time-sep" style="display:none;">:</span>
+              <select id="task-end-minute" style="display:none;">
+                <option value="0">00</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+              </select>
+            </div>
+          </label>
+        </div>
 
         <label>
           <span>Prioridad</span>

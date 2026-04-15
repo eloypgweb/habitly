@@ -41,7 +41,7 @@ const refs = {
   goalsList: document.getElementById("goals-list"),
   goalForm: document.getElementById("goal-create-form"),
   goalName: document.getElementById("goal-name"),
-  goalHours: document.getElementById("goal-hours"),
+  goalDescription: document.getElementById("goal-description"),
   goalColorInputs: Array.from(document.querySelectorAll('input[name="goal-color"]')),
   goalCreateModal: document.getElementById("goal-create-modal"),
   openGoalForm: document.getElementById("open-goal-form"),
@@ -66,10 +66,11 @@ const refs = {
   taskId: document.getElementById("task-id"),
   taskTitle: document.getElementById("task-title"),
   taskDescription: document.getElementById("task-description"),
-  taskDay: document.getElementById("task-day"),
+  taskDate: document.getElementById("task-date"),
   taskHour: document.getElementById("task-hour"),
   taskMinute: document.getElementById("task-minute"),
-  taskDuration: document.getElementById("task-duration"),
+  taskEndHour: document.getElementById("task-end-hour"),
+  taskEndMinute: document.getElementById("task-end-minute"),
   taskPriority: document.getElementById("task-priority"),
   taskType: document.getElementById("task-type"),
   taskObjective: document.getElementById("task-objective"),
@@ -97,6 +98,26 @@ function formatHour(hour) {
   const hStr = String(h).padStart(2, "0");
   const mStr = String(m).padStart(2, "0");
   return `${hStr}:${mStr}`;
+}
+
+function formatTime(hour, minute) {
+  const h = String(hour).padStart(2, "0");
+  const m = String(minute).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+function getDayOfWeek(dateStr) {
+  const date = new Date(dateStr);
+  const dayIndex = date.getDay();
+  const dayMap = { 0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday", 4: "thursday", 5: "friday", 6: "saturday" };
+  return dayMap[dayIndex] || "monday";
+}
+
+function getDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function normalizeType(value) {
@@ -143,19 +164,26 @@ function formatDateLabel(date) {
 
 function getTaskHourBlocks(task) {
   const blocks = [];
-  const startBlock = Math.floor(task.hour);
-  for (let step = 0; step < task.duration; step += 1) {
-    const blockHour = startBlock + step;
+  const startBlock = Math.floor(task.startHour);
+  
+  // If no end hour (indefinido), just use start block
+  if (task.endHour === null || task.endHour === undefined) {
+    return [startBlock];
+  }
+  
+  const endBlock = Math.floor(task.endHour);
+  for (let blockHour = startBlock; blockHour < endBlock; blockHour += 1) {
     if (blockHour > END_HOUR) {
       break;
     }
     blocks.push(blockHour);
   }
-  return blocks;
+  
+  return blocks.length > 0 ? blocks : [startBlock];
 }
 
-function isHourCompleted(dayKey, hour) {
-  return state.completedHours.some((entry) => entry.day === dayKey && entry.hour === hour);
+function isHourCompleted(date, hour) {
+  return state.completedHours.some((entry) => entry.date === date && entry.hour === hour);
 }
 
 function isTaskCompleted(task) {
@@ -163,16 +191,16 @@ function isTaskCompleted(task) {
   if (!blocks.length) {
     return false;
   }
-  return blocks.every((hour) => isHourCompleted(task.day, hour));
+  return blocks.every((hour) => isHourCompleted(task.date, hour));
 }
 
 function setTaskCompletion(task, shouldComplete) {
   const blocks = getTaskHourBlocks(task);
 
   blocks.forEach((hour) => {
-    const index = state.completedHours.findIndex((entry) => entry.day === task.day && entry.hour === hour);
+    const index = state.completedHours.findIndex((entry) => entry.date === task.date && entry.hour === hour);
     if (shouldComplete && index < 0) {
-      state.completedHours.push({ day: task.day, hour });
+      state.completedHours.push({ date: task.date, hour });
     }
     if (!shouldComplete && index >= 0) {
       state.completedHours.splice(index, 1);
@@ -233,22 +261,25 @@ function saveAppState() {
 }
 
 function fillDayAndHourFields() {
-  const dayOptions = DAYS.map((day) => `<option value="${day.key}">${day.label}</option>`).join("");
-
   const hourOptions = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, index) => {
     const hour = START_HOUR + index;
-    return `<option value="${hour}">${String(hour).padStart(2, "0")}:00</option>`;
+    return `<option value="${hour}">${hour}</option>`;
   }).join("");
 
-  refs.taskDay.innerHTML = dayOptions;
+  const endHourOptions = `<option value="">Indefinido</option>` + Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, index) => {
+    const hour = START_HOUR + index;
+    return `<option value="${hour}">${hour}</option>`;
+  }).join("");
+
   refs.taskHour.innerHTML = hourOptions;
+  refs.taskEndHour.innerHTML = endHourOptions;
 }
 
 function fillObjectiveField() {
   const options = [
     "<option value=''>Sin objetivo</option>",
     ...state.objectives.map(
-      (objective) => `<option value="${objective.id}">${objective.name} (${objective.targetHours}h)</option>`,
+      (objective) => `<option value="${objective.id}">${objective.name}</option>`,
     ),
   ];
 
@@ -297,21 +328,27 @@ function setActiveTab(tabName) {
   });
 }
 
-function prefillTaskForm(task = null, day = "monday", hour = START_HOUR) {
+function prefillTaskForm(task = null) {
   fillObjectiveField();
+  const today = getDateString();
 
   if (task) {
-    const baseHour = Math.floor(task.hour);
-    const minute = Math.round((task.hour - baseHour) * 60);
-    
     refs.taskFormTitle.textContent = "Editar tarea";
     refs.taskId.value = task.id;
     refs.taskTitle.value = task.title;
     refs.taskDescription.value = task.description;
-    refs.taskDay.value = task.day;
-    refs.taskHour.value = String(baseHour);
-    refs.taskMinute.value = String(minute);
-    refs.taskDuration.value = String(task.duration);
+    refs.taskDate.value = task.date || today;
+    refs.taskHour.value = String(task.startHour || START_HOUR);
+    refs.taskMinute.value = String(task.startMinute || 0);
+    refs.taskEndHour.value = task.endHour ? String(task.endHour) : "";
+    if (task.endHour) {
+      refs.taskEndMinute.value = String(task.endMinute || 0);
+      refs.taskEndMinute.style.display = "block";
+      document.getElementById("end-time-sep").style.display = "block";
+    } else {
+      refs.taskEndMinute.style.display = "none";
+      document.getElementById("end-time-sep").style.display = "none";
+    }
     refs.taskPriority.value = task.priority;
     refs.taskType.value = task.type;
     refs.taskObjective.value = task.objectiveId || "";
@@ -319,28 +356,16 @@ function prefillTaskForm(task = null, day = "monday", hour = START_HOUR) {
     refs.taskFormTitle.textContent = "Nueva tarea";
     refs.taskForm.reset();
     refs.taskId.value = "";
-    refs.taskDay.value = day;
-    refs.taskHour.value = String(hour);
+    refs.taskDate.value = today;
+    refs.taskHour.value = String(START_HOUR);
     refs.taskMinute.value = "0";
-    refs.taskDuration.value = "1";
+    refs.taskEndHour.value = "";
+    refs.taskEndMinute.style.display = "none";
+    document.getElementById("end-time-sep").style.display = "none";
     refs.taskPriority.value = "medium";
     refs.taskType.value = "";
     refs.taskObjective.value = "";
   }
-}
-
-function getFilteredTasksForDay(dayKey) {
-  return state.tasks
-    .filter((task) => {
-      if (task.day !== dayKey) {
-        return false;
-      }
-      if (state.filters.type === "all") {
-        return true;
-      }
-      return normalizeType(task.type) === state.filters.type;
-    })
-    .sort((a, b) => a.hour - b.hour);
 }
 
 function renderTypeFilter() {
@@ -359,12 +384,13 @@ function renderAppDate() {
 }
 
 function renderTodaySummary() {
-  const currentDay = getCurrentDayKey();
+  const today = getDateString();
   const todayTasks = state.tasks
-    .filter((task) => task.day === currentDay)
-    .sort((a, b) => a.hour - b.hour);
+    .filter((task) => task.date === today)
+    .sort((a, b) => a.startHour - b.startHour);
 
   const pendingToday = todayTasks.filter((task) => !isTaskCompleted(task)).length;
+  const currentDay = getCurrentDayKey();
 
   refs.todayTitle.textContent = `Hoy - ${getDayLabel(currentDay)}`;
   refs.todayTaskCount.textContent = `${todayTasks.length} tareas`;
@@ -383,11 +409,14 @@ function renderTodaySummary() {
       const objectiveDot = objectiveColor
         ? `<span class="objective-dot" style="background:${objectiveColor}"></span>`
         : "";
+      const timeRange = task.endHour 
+        ? `${formatTime(task.startHour, task.startMinute)} - ${formatTime(task.endHour, task.endMinute)}`
+        : `${formatTime(task.startHour, task.startMinute)} - Indefinido`;
       return `
         <article class="task-item priority-${task.priority} ${done ? "done" : ""}">
           <div class="task-top">
             <h3>${task.title}</h3>
-            <span>${formatHour(task.hour)} - ${task.duration}h</span>
+            <span>${timeRange}</span>
           </div>
           <p class="task-description">${task.description || "Sin descripcion"}</p>
           <div class="task-footer">
@@ -406,8 +435,28 @@ function renderTodaySummary() {
 }
 
 function renderWeekOverview() {
-  const dayColumns = DAYS.map((day) => {
-    const tasks = getFilteredTasksForDay(day.key);
+  const today = new Date();
+  const todayText = getDateString(today);
+  const todayDay = today.getDay(); // 0-6 (Sun-Sat)
+  const mondayDate = new Date(today);
+  mondayDate.setDate(today.getDate() - (todayDay === 0 ? 6 : todayDay - 1)); // Go back to Monday
+
+  const dayColumns = DAYS.map((day, index) => {
+    const dayDate = new Date(mondayDate);
+    dayDate.setDate(mondayDate.getDate() + index);
+    const dayDateStr = getDateString(dayDate);
+
+    const tasks = state.tasks
+      .filter((task) => {
+        if (task.date !== dayDateStr) {
+          return false;
+        }
+        if (state.filters.type === "all") {
+          return true;
+        }
+        return normalizeType(task.type) === state.filters.type;
+      })
+      .sort((a, b) => a.startHour - b.startHour);
 
     if (!tasks.length) {
       return `
@@ -427,11 +476,14 @@ function renderWeekOverview() {
         const objectiveDot = objectiveColor
           ? `<span class="objective-dot" style="background:${objectiveColor}"></span>`
           : "";
+        const timeRange = task.endHour 
+          ? `${formatTime(task.startHour, task.startMinute)} - ${formatTime(task.endHour, task.endMinute)}`
+          : `${formatTime(task.startHour, task.startMinute)} - ∞`;
         return `
           <article class="slot-task priority-${task.priority} ${done ? "done" : ""}">
             <div>
               <p class="slot-task-title">${task.title}</p>
-              <p class="slot-task-meta">${formatHour(task.hour)} - ${task.duration}h - ${task.type}</p>
+              <p class="slot-task-meta">${timeRange} - ${task.type}</p>
               <p class="slot-task-meta">${objectiveDot}${getObjectiveName(task)}</p>
             </div>
             <div class="task-actions">
@@ -481,9 +533,9 @@ function renderMonthView() {
   const today = new Date();
   for (let dayNumber = 1; dayNumber <= totalDays; dayNumber += 1) {
     const cellDate = new Date(year, month, dayNumber);
-    const dayKey = getDayFromDate(cellDate);
-    const tasksForDay = state.tasks.filter((task) => task.day === dayKey);
-    const completedForDay = state.completedHours.filter((entry) => entry.day === dayKey).length;
+    const cellDateStr = getDateString(cellDate);
+    const tasksForDay = state.tasks.filter((task) => task.date === cellDateStr);
+    const completedForDay = state.completedHours.filter((entry) => entry.date === cellDateStr).length;
     const isToday = dayNumber === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
     cells.push(`
@@ -503,10 +555,25 @@ function getObjectiveCompletedHours(objectiveId) {
   const validSlots = new Set();
 
   objectiveTasks.forEach((task) => {
-    getTaskHourBlocks(task).forEach((hour) => validSlots.add(slotKey(task.day, hour)));
+    getTaskHourBlocks(task).forEach((hour) => validSlots.add(`${task.date}_${hour}`));
   });
 
-  return state.completedHours.filter((entry) => validSlots.has(slotKey(entry.day, entry.hour))).length;
+  return state.completedHours.filter((entry) => validSlots.has(`${entry.date}_${entry.hour}`)).length;
+}
+
+function calculateTaskDuration(task) {
+  // If no end time, return 1 hour as default unit
+  if (task.endHour === null || task.endHour === undefined) {
+    return 1;
+  }
+  const startTime = task.startHour + task.startMinute / 60;
+  const endTime = task.endHour + task.endMinute / 60;
+  return Math.max(0, endTime - startTime);
+}
+
+function getObjectiveTotalHours(objectiveId) {
+  const objectiveTasks = state.tasks.filter((task) => task.objectiveId === objectiveId);
+  return objectiveTasks.reduce((sum, task) => sum + calculateTaskDuration(task), 0);
 }
 
 function renderGoals() {
@@ -519,17 +586,21 @@ function renderGoals() {
     const linkedTasks = state.tasks
       .filter((task) => task.objectiveId === objective.id)
       .sort((a, b) => {
-        const dayDiff = daySortValue(a.day) - daySortValue(b.day);
-        if (dayDiff !== 0) {
-          return dayDiff;
+        const dateDiff = a.date.localeCompare(b.date);
+        if (dateDiff !== 0) {
+          return dateDiff;
         }
-        return a.hour - b.hour;
+        return a.startHour - b.startHour;
       });
 
     const completedHours = getObjectiveCompletedHours(objective.id);
-    const progress = Math.min((completedHours / objective.targetHours) * 100, 100);
+    const totalHours = getObjectiveTotalHours(objective.id);
+    const progress = totalHours > 0 ? Math.min((completedHours / totalHours) * 100, 100) : 0;
     const nextPending = linkedTasks.find((task) => !isTaskCompleted(task));
     const message = getMotivationMessage(progress / 100);
+    const descriptionHtml = objective.description 
+      ? `<p class="goal-description">${objective.description}</p>`
+      : "";
 
     return `
       <article class="goal-card" style="--goal-accent:${objective.color}">
@@ -538,14 +609,15 @@ function renderGoals() {
           <button class="mini-btn" data-action="delete-goal" data-goal-id="${objective.id}" type="button">Borrar</button>
         </header>
 
-        <p class="goal-meta">${completedHours.toFixed(1)}h / ${objective.targetHours.toFixed(1)}h</p>
+        ${descriptionHtml}
+        <p class="goal-meta">${completedHours.toFixed(1)}h / ${totalHours.toFixed(1)}h (${linkedTasks.length} tareas)</p>
         <div class="progress-track" role="progressbar" aria-valuenow="${progress.toFixed(0)}" aria-valuemin="0" aria-valuemax="100">
           <div class="progress-fill goal-progress" style="width:${progress}%"></div>
         </div>
 
         <p class="goal-meta"><strong>Proxima:</strong> ${
           nextPending
-            ? `${nextPending.title} (${getDayLabel(nextPending.day)} ${formatHour(nextPending.hour)})`
+            ? `${nextPending.title} (${nextPending.date} ${formatTime(nextPending.startHour, nextPending.startMinute)})`
             : "Todo completado"
         }</p>
         <p class="goal-message">${message}</p>
@@ -638,21 +710,27 @@ function handleTaskSubmit(event) {
   const id = refs.taskId.value || createUid();
   const title = refs.taskTitle.value.trim();
   const description = refs.taskDescription.value.trim();
-  const day = refs.taskDay.value;
-  const baseHour = Number(refs.taskHour.value);
-  const minute = Number(refs.taskMinute.value);
-  const hour = baseHour + minute / 60;
-  const duration = Math.max(1, Number(refs.taskDuration.value));
+  const date = refs.taskDate.value;
+  const startHour = Number(refs.taskHour.value);
+  const startMinute = Number(refs.taskMinute.value);
+  const endHourVal = refs.taskEndHour.value;
+  const endHour = endHourVal ? Number(endHourVal) : null;
+  const endMinute = endHourVal ? Number(refs.taskEndMinute.value) : null;
   const priority = refs.taskPriority.value;
   const type = refs.taskType.value.trim() || "study";
   const objectiveId = refs.taskObjective.value || "";
 
-  if (!title) {
-    refs.taskTitle.focus();
+  if (!title || !date) {
+    if (!title) refs.taskTitle.focus();
+    if (!date) refs.taskDate.focus();
     return;
   }
 
-  const taskPayload = { id, title, description, day, hour, duration, priority, type, objectiveId };
+  const taskPayload = { 
+    id, title, description, date, 
+    startHour, startMinute, endHour, endMinute,
+    priority, type, objectiveId 
+  };
   const index = state.tasks.findIndex((task) => task.id === id);
 
   if (index >= 0) {
@@ -670,22 +748,23 @@ function handleGoalSubmit(event) {
   event.preventDefault();
 
   const name = refs.goalName.value.trim();
-  const targetHours = Number(refs.goalHours.value);
+  const description = refs.goalDescription.value.trim();
   const selectedColorInput = refs.goalColorInputs.find((input) => input.checked);
   const color = selectedColorInput?.value ?? GOAL_COLORS[0];
-  if (!name || Number.isNaN(targetHours) || targetHours <= 0) {
+  
+  if (!name) {
+    refs.goalName.focus();
     return;
   }
 
   state.objectives.push({
     id: createUid(),
     name,
-    targetHours,
+    description,
     color,
   });
 
   refs.goalForm.reset();
-  refs.goalHours.value = "157.5";
   if (refs.goalColorInputs[0]) {
     refs.goalColorInputs[0].checked = true;
   }
@@ -762,7 +841,7 @@ function handleClick(event) {
       return;
     }
 
-    prefillTaskForm(task, task.day, task.hour);
+    prefillTaskForm(task);
     setModalOpen(true);
     return;
   }
@@ -802,6 +881,12 @@ function bindEvents() {
 
   refs.closeTaskForm.addEventListener("click", () => setModalOpen(false));
   refs.cancelTaskForm.addEventListener("click", () => setModalOpen(false));
+
+  refs.taskEndHour.addEventListener("change", () => {
+    const isIndefinido = refs.taskEndHour.value === "";
+    refs.taskEndMinute.style.display = isIndefinido ? "none" : "block";
+    document.getElementById("end-time-sep").style.display = isIndefinido ? "none" : "block";
+  });
 
   refs.taskModal.addEventListener("click", (event) => {
     if (event.target === refs.taskModal) {
@@ -884,7 +969,28 @@ function bindEvents() {
   refs.goalForm.addEventListener("submit", handleGoalSubmit);
 }
 
+function migrateTasks() {
+  const today = getDateString();
+  state.tasks = state.tasks.map((task) => {
+    // Already migrated (has date field)
+    if (task.date) {
+      return task;
+    }
+    // Old format: convert day + hour to date
+    // Simple approach: assume old tasks are for today
+    return {
+      ...task,
+      date: today,
+      startHour: Math.floor(task.hour || START_HOUR),
+      startMinute: Math.round(((task.hour || START_HOUR) - Math.floor(task.hour || START_HOUR)) * 60),
+      endHour: task.duration ? Math.floor(task.hour + task.duration) : null,
+      endMinute: 0,
+    };
+  });
+}
+
 function startApp() {
+  migrateTasks();
   sanitizeObjectives();
   fillDayAndHourFields();
   fillObjectiveField();

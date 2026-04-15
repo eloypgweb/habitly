@@ -7,7 +7,7 @@ const DEFAULT_STATE = {
     {
       id: "obj-pau",
       name: "Estudio PAU",
-      targetHours: 157.5,
+      description: "Preparación integral para el examen PAU",
       color: "#67c8ff",
     },
   ],
@@ -43,7 +43,7 @@ function normalizeObjective(rawObjective = {}) {
   return {
     id: String(rawObjective.id ?? crypto.randomUUID()),
     name: String(rawObjective.name ?? "Objetivo").trim() || "Objetivo",
-    targetHours: Math.max(1, Number(rawObjective.targetHours ?? 1)),
+    description: String(rawObjective.description ?? "").trim(),
     color: String(rawObjective.color ?? "#67c8ff"),
   };
 }
