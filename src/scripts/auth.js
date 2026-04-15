@@ -8,6 +8,9 @@ import {
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");
 const feedback = document.getElementById("auth-feedback");
+const registerSuccessModal = document.getElementById("register-success-modal");
+
+let registerRedirectTimer = null;
 
 function setFeedback(message, kind = "info") {
   if (!feedback) {
@@ -39,6 +42,26 @@ function setButtonLoading(button, loading, loadingLabel) {
     button.textContent = button.dataset.label ?? button.textContent;
     button.disabled = false;
   }
+}
+
+function openSuccessModalAndRedirect() {
+  if (!registerSuccessModal) {
+    window.location.href = "/login";
+    return;
+  }
+
+  registerSuccessModal.classList.add("open");
+  registerSuccessModal.setAttribute("aria-hidden", "false");
+
+  if (registerRedirectTimer) {
+    clearTimeout(registerRedirectTimer);
+  }
+
+  registerRedirectTimer = window.setTimeout(() => {
+    registerSuccessModal.classList.remove("open");
+    registerSuccessModal.setAttribute("aria-hidden", "true");
+    window.location.href = "/login";
+  }, 3000);
 }
 
 function normalizeUsername(username) {
@@ -146,8 +169,8 @@ async function handleRegister(event) {
     }
 
     await signUpWithPassword(email, password, username);
-    setFeedback("Cuenta creada. Ya puedes iniciar sesion.", "success");
-    window.location.href = "/login";
+    setFeedback("Cuenta creada. Revisa tu bandeja de entrada.", "success");
+    openSuccessModalAndRedirect();
   } catch (error) {
     setFeedback(error?.message ?? "No se pudo crear la cuenta.", "error");
   } finally {

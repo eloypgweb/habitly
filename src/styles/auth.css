@@ -156,3 +156,54 @@ body {
 .auth-switch a:hover {
   text-decoration: underline;
 }
+
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(5, 10, 16, 0.58);
+  z-index: 40;
+}
+
+.auth-modal.open {
+  display: flex;
+}
+
+.auth-modal-card {
+  width: min(420px, 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(142, 229, 184, 0.38);
+  background: linear-gradient(160deg, rgba(17, 28, 42, 0.98), rgba(12, 22, 33, 0.98));
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.42);
+  padding: 20px;
+  text-align: center;
+}
+
+.auth-modal-card.success {
+  border-color: rgba(116, 221, 157, 0.46);
+  background:
+    radial-gradient(circle at top, rgba(116, 221, 157, 0.18), transparent 55%),
+    linear-gradient(160deg, rgba(17, 28, 42, 0.98), rgba(12, 22, 33, 0.98));
+}
+
+.auth-modal-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  color: #8ee5b8;
+}
+
+.auth-modal-card h2 {
+  margin: 8px 0 0;
+  font-size: 1.3rem;
+}
+
+.auth-modal-card p {
+  margin: 10px 0 0;
+  color: var(--auth-muted);
+  line-height: 1.5;
+}
