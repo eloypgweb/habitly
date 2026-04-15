@@ -26,10 +26,21 @@
           <select id="task-day" required></select>
         </label>
 
-        <label>
-          <span>Hora</span>
-          <select id="task-hour" required></select>
-        </label>
+        <div class="time-grid">
+          <label>
+            <span>Hora</span>
+            <select id="task-hour" required></select>
+          </label>
+          <label>
+            <span>Minuto</span>
+            <select id="task-minute" required>
+              <option value="0">00</option>
+              <option value="15">15</option>
+              <option value="30">30</option>
+              <option value="45">45</option>
+            </select>
+          </label>
+        </div>
 
         <label>
           <span>Duracion</span>
@@ -61,5 +72,19 @@
         <button class="btn btn-primary" type="submit">Guardar</button>
       </footer>
     </form>
+  </div>
+</div>
+
+<div id="confirm-task-modal" class="modal" aria-hidden="true">
+  <div class="modal-card confirm-card">
+    <header class="modal-header">
+      <h3>Eliminar tarea</h3>
+      <button id="close-confirm-task" class="icon-btn" type="button" aria-label="Close">X</button>
+    </header>
+    <p class="confirm-copy">Se eliminará la tarea. Esta acción no se puede deshacer.</p>
+    <footer class="modal-actions">
+      <button id="cancel-confirm-task" class="btn" type="button">Cancelar</button>
+      <button id="accept-confirm-task" class="btn btn-danger" type="button">Eliminar</button>
+    </footer>
   </div>
 </div>

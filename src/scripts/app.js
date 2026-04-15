@@ -21,6 +21,7 @@ const state = {
   activeTab: "today",
   monthCursor: new Date(),
   pendingGoalDeletionId: "",
+  pendingTaskDeletionId: "",
   filters: {
     type: "all",
   },
@@ -50,6 +51,10 @@ const refs = {
   closeConfirmGoal: document.getElementById("close-confirm-goal"),
   cancelConfirmGoal: document.getElementById("cancel-confirm-goal"),
   acceptConfirmGoal: document.getElementById("accept-confirm-goal"),
+  confirmTaskModal: document.getElementById("confirm-task-modal"),
+  closeConfirmTask: document.getElementById("close-confirm-task"),
+  cancelConfirmTask: document.getElementById("cancel-confirm-task"),
+  acceptConfirmTask: document.getElementById("accept-confirm-task"),
   typeFilter: document.getElementById("task-type-filter"),
   completedHours: document.getElementById("completed-hours"),
   taskModal: document.getElementById("task-modal"),
@@ -63,6 +68,7 @@ const refs = {
   taskDescription: document.getElementById("task-description"),
   taskDay: document.getElementById("task-day"),
   taskHour: document.getElementById("task-hour"),
+  taskMinute: document.getElementById("task-minute"),
   taskDuration: document.getElementById("task-duration"),
   taskPriority: document.getElementById("task-priority"),
   taskType: document.getElementById("task-type"),
@@ -86,7 +92,11 @@ function createUid() {
 }
 
 function formatHour(hour) {
-  return `${String(hour).padStart(2, "0")}:00`;
+  const h = Math.floor(hour);
+  const m = Math.round((hour - h) * 60);
+  const hStr = String(h).padStart(2, "0");
+  const mStr = String(m).padStart(2, "0");
+  return `${hStr}:${mStr}`;
 }
 
 function normalizeType(value) {
@@ -133,8 +143,9 @@ function formatDateLabel(date) {
 
 function getTaskHourBlocks(task) {
   const blocks = [];
+  const startBlock = Math.floor(task.hour);
   for (let step = 0; step < task.duration; step += 1) {
-    const blockHour = task.hour + step;
+    const blockHour = startBlock + step;
     if (blockHour > END_HOUR) {
       break;
     }
@@ -226,7 +237,7 @@ function fillDayAndHourFields() {
 
   const hourOptions = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, index) => {
     const hour = START_HOUR + index;
-    return `<option value="${hour}">${formatHour(hour)}</option>`;
+    return `<option value="${hour}">${String(hour).padStart(2, "0")}:00</option>`;
   }).join("");
 
   refs.taskDay.innerHTML = dayOptions;
@@ -258,6 +269,11 @@ function setConfirmGoalModalOpen(open) {
   refs.confirmGoalModal.setAttribute("aria-hidden", String(!open));
 }
 
+function setConfirmTaskModalOpen(open) {
+  refs.confirmTaskModal.classList.toggle("open", open);
+  refs.confirmTaskModal.setAttribute("aria-hidden", String(!open));
+}
+
 function setGoalCreateModalOpen(open) {
   refs.goalCreateModal.classList.toggle("open", open);
   refs.goalCreateModal.setAttribute("aria-hidden", String(!open));
@@ -285,12 +301,16 @@ function prefillTaskForm(task = null, day = "monday", hour = START_HOUR) {
   fillObjectiveField();
 
   if (task) {
+    const baseHour = Math.floor(task.hour);
+    const minute = Math.round((task.hour - baseHour) * 60);
+    
     refs.taskFormTitle.textContent = "Editar tarea";
     refs.taskId.value = task.id;
     refs.taskTitle.value = task.title;
     refs.taskDescription.value = task.description;
     refs.taskDay.value = task.day;
-    refs.taskHour.value = String(task.hour);
+    refs.taskHour.value = String(baseHour);
+    refs.taskMinute.value = String(minute);
     refs.taskDuration.value = String(task.duration);
     refs.taskPriority.value = task.priority;
     refs.taskType.value = task.type;
@@ -301,6 +321,7 @@ function prefillTaskForm(task = null, day = "monday", hour = START_HOUR) {
     refs.taskId.value = "";
     refs.taskDay.value = day;
     refs.taskHour.value = String(hour);
+    refs.taskMinute.value = "0";
     refs.taskDuration.value = "1";
     refs.taskPriority.value = "medium";
     refs.taskType.value = "";
@@ -596,6 +617,21 @@ function confirmDeleteGoal() {
   setConfirmGoalModalOpen(false);
 }
 
+function promptDeleteTask(taskId) {
+  state.pendingTaskDeletionId = taskId;
+  setConfirmTaskModalOpen(true);
+}
+
+function confirmDeleteTask() {
+  if (!state.pendingTaskDeletionId) {
+    return;
+  }
+
+  deleteTask(state.pendingTaskDeletionId);
+  state.pendingTaskDeletionId = "";
+  setConfirmTaskModalOpen(false);
+}
+
 function handleTaskSubmit(event) {
   event.preventDefault();
 
@@ -603,7 +639,9 @@ function handleTaskSubmit(event) {
   const title = refs.taskTitle.value.trim();
   const description = refs.taskDescription.value.trim();
   const day = refs.taskDay.value;
-  const hour = Number(refs.taskHour.value);
+  const baseHour = Number(refs.taskHour.value);
+  const minute = Number(refs.taskMinute.value);
+  const hour = baseHour + minute / 60;
   const duration = Math.max(1, Number(refs.taskDuration.value));
   const priority = refs.taskPriority.value;
   const type = refs.taskType.value.trim() || "study";
@@ -730,7 +768,7 @@ function handleClick(event) {
   }
 
   if (action === "delete-task") {
-    deleteTask(trigger.dataset.taskId);
+    promptDeleteTask(trigger.dataset.taskId);
     return;
   }
 
@@ -794,10 +832,31 @@ function bindEvents() {
     confirmDeleteGoal();
   });
 
+  refs.closeConfirmTask.addEventListener("click", () => {
+    state.pendingTaskDeletionId = "";
+    setConfirmTaskModalOpen(false);
+  });
+
   refs.confirmGoalModal.addEventListener("click", (event) => {
     if (event.target === refs.confirmGoalModal) {
       state.pendingGoalDeletionId = "";
       setConfirmGoalModalOpen(false);
+    }
+  });
+
+  refs.cancelConfirmTask.addEventListener("click", () => {
+    state.pendingTaskDeletionId = "";
+    setConfirmTaskModalOpen(false);
+  });
+
+  refs.acceptConfirmTask.addEventListener("click", () => {
+    confirmDeleteTask();
+  });
+
+  refs.confirmTaskModal.addEventListener("click", (event) => {
+    if (event.target === refs.confirmTaskModal) {
+      state.pendingTaskDeletionId = "";
+      setConfirmTaskModalOpen(false);
     }
   });
 
