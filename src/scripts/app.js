@@ -1,4 +1,5 @@
 import { getDefaultState, loadState, saveState } from "../utils/storage.js";
+import { getCurrentUser, signOutUser } from "../utils/supabase.js";
 
 const DAYS = [
   { key: "monday", label: "Lunes" },
@@ -17,7 +18,6 @@ const GOAL_COLORS = ["#67c8ff", "#5ad89d", "#ff8a65", "#f2c94c", "#bb86fc", "#ff
 
 const state = {
   ...getDefaultState(),
-  ...loadState(),
   activeTab: "today",
   monthCursor: new Date(),
   pendingGoalDeletionId: "",
@@ -81,6 +81,7 @@ const refs = {
   profilePhotoInput: document.getElementById("profile-photo-input"),
   choosePhotoBtn: document.getElementById("choose-photo-btn"),
   saveProfileBtn: document.getElementById("save-profile-btn"),
+  logoutBtn: document.getElementById("logout-btn"),
   profileTotalTasks: document.getElementById("profile-total-tasks"),
   profileTotalCompleted: document.getElementById("profile-total-completed"),
 };
@@ -253,7 +254,7 @@ function getMotivationMessage(progressRatio) {
 }
 
 function saveAppState() {
-  saveState({
+  void saveState({
     tasks: state.tasks,
     completedHours: state.completedHours,
     objectives: state.objectives,
@@ -908,11 +909,7 @@ function bindEvents() {
   document.addEventListener("click", handleClick);
 
   refs.openGoalForm.addEventListener("click", () => {
-    refs.goalForm.reset();
-    refs.goalHours.value = "157.5";
-    if (refs.goalColorInputs[0]) {
-      refs.goalColorInputs[0].checked = true;
-    }
+    prefillGoalForm(null);
     setGoalCreateModalOpen(true);
   });
 
@@ -1013,6 +1010,15 @@ function bindEvents() {
     renderProfile();
   });
 
+  refs.logoutBtn.addEventListener("click", async () => {
+    try {
+      await signOutUser();
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Habitly: no se pudo cerrar sesion.", error);
+    }
+  });
+
   refs.taskForm.addEventListener("submit", handleTaskSubmit);
   refs.goalForm.addEventListener("submit", handleGoalSubmit);
 }
@@ -1037,7 +1043,24 @@ function migrateTasks() {
   });
 }
 
-function startApp() {
+async function startApp() {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      window.location.href = "/login";
+      return;
+    }
+  } catch {
+    window.location.href = "/login";
+    return;
+  }
+
+  const persistedState = await loadState();
+  state.tasks = persistedState.tasks;
+  state.completedHours = persistedState.completedHours;
+  state.objectives = persistedState.objectives;
+  state.profile = persistedState.profile;
+
   migrateTasks();
   sanitizeObjectives();
   fillDayAndHourFields();
@@ -1047,4 +1070,4 @@ function startApp() {
   saveAppState();
 }
 
-startApp();
+void startApp();

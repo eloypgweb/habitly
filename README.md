@@ -1,43 +1,79 @@
-# Astro Starter Kit: Minimal
+# Habitly
 
-```sh
-npm create astro@latest -- --template minimal
-```
+Habitly es un planner de habitos y estudio hecho con Astro.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Permite:
+- Gestionar tareas por dia, semana y mes.
+- Vincular tareas a objetivos.
+- Marcar bloques horarios completados.
+- Guardar perfil basico (nombre y avatar).
+- Login y registro con email + contrasena.
+- Persistir datos en localStorage y sincronizar en Supabase por usuario.
 
-## 🚀 Project Structure
+## Requisitos
 
-Inside of your Astro project, you'll see the following folders and files:
+- Node.js 22 o superior.
+- npm.
+- Proyecto de Supabase.
+
+## Comandos
+
+Todos los comandos se ejecutan desde la raiz del proyecto:
+
+| Command | Action |
+| :-- | :-- |
+| `npm install` | Instala dependencias |
+| `npm run dev` | Inicia entorno local en `localhost:4321` |
+| `npm run build` | Genera build de produccion |
+| `npm run preview` | Sirve el build local |
+
+## Auth y persistencia
+
+Habitly usa una estrategia hibrida:
+- Siempre guarda en localStorage.
+- Si hay sesion de usuario en Supabase, sincroniza el estado remoto automaticamente.
+
+El acceso a la app principal requiere iniciar sesion en `/login` o crear cuenta en `/register`.
+
+## Configuracion Supabase
+
+1. Copia `.env.example` a `.env`.
+2. Rellena estas variables:
+	 - `PUBLIC_SUPABASE_URL`
+	 - `PUBLIC_SUPABASE_ANON_KEY`
+3. En Supabase > Authentication > Providers habilita `Email`.
+4. En Supabase > Authentication > Sign In / Providers configura si quieres exigir confirmacion de email.
+5. Ejecuta el SQL de `supabase/schema.sql` en el SQL Editor.
+
+Con eso, cada usuario autenticado tendra su propio registro de estado en la tabla `user_states`.
+
+## Deploy en Vercel
+
+1. En Vercel, abre tu proyecto y entra en `Settings > Environment Variables`.
+2. Crea las variables:
+	 - `PUBLIC_SUPABASE_URL`
+	 - `PUBLIC_SUPABASE_ANON_KEY`
+3. Asignalas a `Production` (y recomendado tambien `Preview` y `Development`).
+4. Haz redeploy del proyecto.
+5. En Supabase > Authentication > URL Configuration, agrega la URL de Vercel en `Site URL`.
+
+## Estructura relevante
 
 ```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+src/
+	components/      # Vistas Astro
+	scripts/app.js   # Logica de UI y eventos
+	scripts/auth.js  # Login y registro
+	styles/app.css   # Estilos globales
+	styles/auth.css  # UI de login/registro
+	utils/storage.js # Persistencia local + sync
+	utils/supabase.js
+supabase/
+	schema.sql       # Tabla y politicas RLS
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Notas tecnicas
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- El estado se guarda como JSON en `user_states.payload`.
+- La clave de localStorage actual es `habitly_state_v2`.
+- Se incluye normalizacion de datos para compatibilidad con formatos anteriores.
