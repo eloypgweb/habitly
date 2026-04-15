@@ -33,6 +33,7 @@ const state = {
 
 let currentUserId = "";
 let currentUserEmail = "";
+let currentUserUsername = "";
 
 const refs = {
   appDate: document.getElementById("app-date"),
@@ -83,6 +84,7 @@ const refs = {
   taskType: document.getElementById("task-type"),
   taskObjective: document.getElementById("task-objective"),
   profileName: document.getElementById("profile-name"),
+  profileUsername: document.getElementById("profile-username"),
   profileEmail: document.getElementById("profile-email"),
   profileAvatar: document.getElementById("profile-avatar"),
   profileAvatarFallback: document.getElementById("profile-avatar-fallback"),
@@ -862,6 +864,7 @@ function renderProfile() {
   const initial = name[0]?.toUpperCase() || "?";
 
   refs.profileName.value = state.profile?.name || "";
+  refs.profileUsername.value = currentUserUsername;
   refs.profileEmail.value = currentUserEmail;
   refs.profileAvatarFallback.textContent = initial;
 
@@ -1258,6 +1261,13 @@ async function startApp() {
     }
     currentUserId = currentUser.id;
     currentUserEmail = String(currentUser.email ?? "No disponible");
+    currentUserUsername = String(currentUser.user_metadata?.username ?? "").trim();
+    if (!currentUserUsername && currentUserEmail.includes("@")) {
+      currentUserUsername = currentUserEmail.split("@")[0];
+    }
+    if (!currentUserUsername) {
+      currentUserUsername = "No disponible";
+    }
   } catch {
     window.location.href = "/login";
     return;
