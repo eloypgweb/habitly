@@ -13,7 +13,7 @@ const DAYS = [
 
 const START_HOUR = 8;
 const END_HOUR = 23;
-const TAB_NAMES = ["today", "week", "month", "goals", "profile"];
+const TAB_NAMES = ["today", "week", "month", "day-detail", "goals", "profile"];
 const GOAL_COLORS = ["#67c8ff", "#5ad89d", "#ff8a65", "#f2c94c", "#bb86fc", "#ff6b9f"];
 const SAVE_DEBOUNCE_MS = 700;
 const RETRY_DELAY_MS = 4000;
@@ -22,7 +22,9 @@ const IMPORT_MAX_BYTES = 1024 * 1024 * 2;
 const state = {
   ...getDefaultState(),
   activeTab: "today",
+  weekCursor: new Date(),
   monthCursor: new Date(),
+  dayDetailDate: "",
   pendingGoalDeletionId: "",
   pendingGoalEditId: "",
   pendingTaskDeletionId: "",
@@ -40,6 +42,8 @@ const refs = {
   syncStatus: document.getElementById("sync-status"),
   tabButtons: Array.from(document.querySelectorAll("[data-tab-trigger]")),
   views: Array.from(document.querySelectorAll("[data-view]")),
+  weekTitle: document.getElementById("week-title"),
+  weekRange: document.getElementById("week-range"),
   todayTitle: document.getElementById("today-title"),
   todayTaskCount: document.getElementById("today-task-count"),
   todayTaskList: document.getElementById("today-task-list"),
@@ -47,6 +51,11 @@ const refs = {
   weeklyOverview: document.getElementById("weekly-overview"),
   monthTitle: document.getElementById("month-title"),
   monthGrid: document.getElementById("month-grid"),
+  dayDetailPanel: document.querySelector("[data-view='day-detail']"),
+  dayDetailTitle: document.getElementById("day-detail-title"),
+  dayDetailMeta: document.getElementById("day-detail-meta"),
+  dayDetailTaskList: document.getElementById("day-detail-task-list"),
+  backToMonthBtn: document.getElementById("back-to-month"),
   goalsList: document.getElementById("goals-list"),
   goalForm: document.getElementById("goal-create-form"),
   goalName: document.getElementById("goal-name"),
@@ -137,6 +146,52 @@ function getDateString(date = new Date()) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function parseDateString(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function addDays(date, amount) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function getWeekStart(date = new Date()) {
+  const next = new Date(date);
+  const dayIndex = next.getDay();
+  const diff = dayIndex === 0 ? -6 : 1 - dayIndex;
+  next.setDate(next.getDate() + diff);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
+function formatDateLong(date) {
+  return new Intl.DateTimeFormat("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatWeekRangeLabel(weekStart) {
+  const weekEnd = addDays(weekStart, 6);
+  const startLabel = new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "short",
+  }).format(weekStart);
+  const endLabel = new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "short",
+  }).format(weekEnd);
+  return `${startLabel} - ${endLabel}`;
+}
+
+function getWeekCursorStart() {
+  return getWeekStart(state.weekCursor);
 }
 
 function normalizeType(value) {
@@ -609,6 +664,16 @@ function renderAppDate() {
   refs.appDate.textContent = formatDateLabel(new Date());
 }
 
+function renderWeekHeader() {
+  if (!refs.weekTitle || !refs.weekRange) {
+    return;
+  }
+
+  const weekStart = getWeekCursorStart();
+  refs.weekTitle.textContent = "Vista semanal";
+  refs.weekRange.textContent = `Semana del ${formatWeekRangeLabel(weekStart)}`;
+}
+
 function renderTodaySummary() {
   const today = getDateString();
   const todayTasks = state.tasks
@@ -662,15 +727,10 @@ function renderTodaySummary() {
 }
 
 function renderWeekOverview() {
-  const today = new Date();
-  const todayText = getDateString(today);
-  const todayDay = today.getDay(); // 0-6 (Sun-Sat)
-  const mondayDate = new Date(today);
-  mondayDate.setDate(today.getDate() - (todayDay === 0 ? 6 : todayDay - 1)); // Go back to Monday
+  const mondayDate = getWeekCursorStart();
 
   const dayColumns = DAYS.map((day, index) => {
-    const dayDate = new Date(mondayDate);
-    dayDate.setDate(mondayDate.getDate() + index);
+    const dayDate = addDays(mondayDate, index);
     const dayDateStr = getDateString(dayDate);
 
     const tasks = state.tasks
@@ -736,6 +796,65 @@ function renderWeekOverview() {
   refs.weeklyOverview.innerHTML = dayColumns;
 }
 
+function renderDayDetail() {
+  if (!refs.dayDetailTitle || !refs.dayDetailMeta || !refs.dayDetailTaskList) {
+    return;
+  }
+
+  if (!state.dayDetailDate) {
+    refs.dayDetailTitle.textContent = "Detalle del día";
+    refs.dayDetailMeta.textContent = "0 tareas";
+    refs.dayDetailTaskList.innerHTML = "";
+    return;
+  }
+
+  const selectedDate = parseDateString(state.dayDetailDate);
+  const selectedDayTasks = state.tasks
+    .filter((task) => task.date === state.dayDetailDate)
+    .sort((a, b) => a.startHour - b.startHour);
+
+  refs.dayDetailTitle.textContent = formatDateLong(selectedDate);
+  refs.dayDetailMeta.textContent = `${selectedDayTasks.length} tareas`;
+
+  if (!selectedDayTasks.length) {
+    refs.dayDetailTaskList.innerHTML = "<p class='empty-message'>No hay tareas para este día.</p>";
+    return;
+  }
+
+  refs.dayDetailTaskList.innerHTML = selectedDayTasks
+    .map((task) => {
+      const done = isTaskCompleted(task);
+      const objectiveColor = getObjectiveColor(task);
+      const objectiveDot = objectiveColor
+        ? `<span class="objective-dot" style="background:${objectiveColor}"></span>`
+        : "";
+      const timeRange = task.endHour
+        ? `${formatTime(task.startHour, task.startMinute)} - ${formatTime(task.endHour, task.endMinute)}`
+        : `${formatTime(task.startHour, task.startMinute)} - Indefinido`;
+
+      return `
+        <article class="task-item priority-${task.priority} ${done ? "done" : ""}">
+          <div class="task-top">
+            <h3>${task.title}</h3>
+            <span>${timeRange}</span>
+          </div>
+          <p class="task-description">${task.description || "Sin descripcion"}</p>
+          <div class="task-footer">
+            <p class="task-badge">${objectiveDot}${task.type} - ${getObjectiveName(task)}</p>
+            <div class="task-actions">
+              <button class="mini-btn" type="button" data-action="toggle-task" data-task-id="${task.id}" title="${done ? "Desmarcar" : "Completar"}">
+                ${done ? "✓" : "○"}
+              </button>
+              <button class="mini-btn" type="button" data-action="edit-task" data-task-id="${task.id}" title="Editar">✏️</button>
+              <button class="mini-btn" type="button" data-action="delete-task" data-task-id="${task.id}" title="Borrar">🗑️</button>
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function renderMonthView() {
   const baseDate = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth(), 1);
   const year = baseDate.getFullYear();
@@ -766,11 +885,11 @@ function renderMonthView() {
     const isToday = dayNumber === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
     cells.push(`
-      <article class="month-cell ${isToday ? "today" : ""}">
+      <button class="month-cell month-cell-btn ${isToday ? "today" : ""}" type="button" data-action="open-day-detail" data-date="${cellDateStr}">
         <p class="month-number">${dayNumber}</p>
-        <p class="month-meta">${tasksForDay.length} tareas</p>
-        <p class="month-meta">${completedForDay}h hechas</p>
-      </article>
+        <p class="month-meta month-meta-tasks">${tasksForDay.length} tareas</p>
+        <p class="month-meta month-meta-hours">${completedForDay}h hechas</p>
+      </button>
     `);
   }
 
@@ -885,12 +1004,26 @@ function renderAll() {
   renderAppDate();
   renderTypeFilter();
   renderTodaySummary();
+  renderWeekHeader();
   renderWeekOverview();
   renderMonthView();
+  renderDayDetail();
   renderGoals();
   renderProfile();
   fillObjectiveField();
   setActiveTab(state.activeTab);
+}
+
+function openDayDetail(dateString) {
+  state.dayDetailDate = dateString;
+  setActiveTab("day-detail");
+  renderAll();
+}
+
+function closeDayDetail() {
+  state.dayDetailDate = "";
+  setActiveTab("month");
+  renderAll();
 }
 
 function deleteTask(taskId) {
@@ -1036,6 +1169,14 @@ function shiftMonth(direction) {
   renderMonthView();
 }
 
+function shiftWeek(direction) {
+  const next = new Date(state.weekCursor);
+  next.setDate(next.getDate() + direction * 7);
+  state.weekCursor = next;
+  renderWeekHeader();
+  renderWeekOverview();
+}
+
 function readAvatarFile(file) {
   if (!file) {
     return;
@@ -1065,6 +1206,21 @@ function handleClick(event) {
 
   if (action === "next-month") {
     shiftMonth(1);
+    return;
+  }
+
+  if (action === "prev-week") {
+    shiftWeek(-1);
+    return;
+  }
+
+  if (action === "next-week") {
+    shiftWeek(1);
+    return;
+  }
+
+  if (action === "open-day-detail") {
+    openDayDetail(trigger.dataset.date);
     return;
   }
 
@@ -1200,6 +1356,10 @@ function bindEvents() {
     renderWeekOverview();
   });
 
+  refs.backToMonthBtn?.addEventListener("click", () => {
+    closeDayDetail();
+  });
+
   refs.choosePhotoBtn.addEventListener("click", () => {
     refs.profilePhotoInput.click();
   });
@@ -1278,6 +1438,7 @@ async function startApp() {
   state.completedHours = persistedState.completedHours;
   state.objectives = persistedState.objectives;
   state.profile = persistedState.profile;
+  state.weekCursor = new Date();
 
   const usernameFromAuth = String(currentUser.user_metadata?.username ?? "").trim();
   if (!state.profile.name && usernameFromAuth) {
@@ -1286,6 +1447,7 @@ async function startApp() {
 
   migrateTasks();
   sanitizeObjectives();
+  state.weekCursor = getWeekStart(new Date());
   fillDayAndHourFields();
   fillObjectiveField();
   renderAll();

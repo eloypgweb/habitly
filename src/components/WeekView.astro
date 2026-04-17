@@ -1,7 +1,16 @@
 <section class="view-panel" data-view="week" aria-label="Week view">
   <article class="panel">
     <header class="section-header">
-      <h2>Vista semanal</h2>
+      <div>
+        <h2 id="week-title">Vista semanal</h2>
+        <p class="view-subtitle" id="week-range">Semana actual</p>
+      </div>
+      <div class="section-actions">
+        <button class="mini-btn" type="button" data-action="prev-week" aria-label="Semana anterior">←</button>
+        <button class="mini-btn" type="button" data-action="next-week" aria-label="Semana siguiente">→</button>
+      </div>
+    </header>
+    <header class="section-header week-filter-row">
       <label class="filter-wrap" for="task-type-filter">
         <span>Tipo</span>
         <select id="task-type-filter" name="task-type-filter">

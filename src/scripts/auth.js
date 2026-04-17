@@ -76,7 +76,7 @@ function getReadableAuthError(error, fallbackMessage) {
   const rawMessage = String(error?.message ?? "").toLowerCase();
 
   if (rawMessage.includes("email rate limit") || rawMessage.includes("rate limit exceeded")) {
-    return "Se enviaron demasiados correos en poco tiempo. Espera unos minutos y vuelve a intentarlo.";
+    return "Estamos teniendo muchas solicitudes de registro. Intentalo de nuevo en unos minutos.";
   }
 
   return error?.message ?? fallbackMessage;
