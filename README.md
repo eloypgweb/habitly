@@ -42,9 +42,13 @@ El acceso a la app principal requiere iniciar sesion en `/login` o crear cuenta 
 2. Rellena estas variables:
 	 - `PUBLIC_SUPABASE_URL`
 	 - `PUBLIC_SUPABASE_ANON_KEY`
+	 - `PUBLIC_APP_URL` (ejemplo: `https://tu-dominio.vercel.app`)
 3. En Supabase > Authentication > Providers habilita `Email`.
 4. En Supabase > Authentication > Sign In / Providers configura si quieres exigir confirmacion de email.
-5. Ejecuta el SQL de `supabase/schema.sql` en el SQL Editor.
+5. En Supabase > Authentication > URL Configuration:
+	 - `Site URL`: tu dominio real (produccion)
+	 - `Redirect URLs`: incluye `https://tu-dominio.vercel.app/auth/confirm` y `http://localhost:4321/auth/confirm`
+6. Ejecuta el SQL de `supabase/schema.sql` en el SQL Editor.
 
 Con eso, cada usuario autenticado tendra:
 - Estado sincronizado en `user_states`.

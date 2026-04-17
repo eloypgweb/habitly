@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
 const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
+const PUBLIC_APP_URL = import.meta.env.PUBLIC_APP_URL ?? "";
 
 let client = null;
 
@@ -15,6 +16,16 @@ function normalizeIdentifier(identifier) {
 
 function normalizeUsername(username) {
   return username.trim().toLowerCase();
+}
+
+function getEmailRedirectTo() {
+  const base = PUBLIC_APP_URL || (typeof window !== "undefined" ? window.location.origin : "");
+  if (!base) {
+    return undefined;
+  }
+
+  const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+  return `${normalizedBase}/auth/confirm`;
 }
 
 function getClient() {
@@ -120,6 +131,7 @@ export async function signUpWithPassword(email, password, username) {
   }
 
   const normalizedUsername = normalizeUsername(username);
+  const emailRedirectTo = getEmailRedirectTo();
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -128,6 +140,7 @@ export async function signUpWithPassword(email, password, username) {
       data: {
         username: normalizedUsername,
       },
+      ...(emailRedirectTo ? { emailRedirectTo } : {}),
     },
   });
 

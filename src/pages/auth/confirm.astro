@@ -1,0 +1,31 @@
+---
+import "../../styles/auth.css";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f1522" />
+    <title>Habitly - Cuenta confirmada</title>
+  </head>
+  <body class="auth-body">
+    <main class="auth-shell">
+      <section class="auth-card auth-confirm-card">
+        <p class="auth-eyebrow">Habitly</p>
+        <h1>Cuenta confirmada</h1>
+        <p class="auth-subtitle">
+          Tu cuenta ya está activa. Te llevamos al login en unos segundos para que puedas entrar.
+        </p>
+
+        <a class="auth-btn auth-link-btn" href="/login">Ir al login ahora</a>
+      </section>
+    </main>
+
+    <script>
+      window.setTimeout(() => {
+        window.location.href = "/login";
+      }, 2500);
+    </script>
+  </body>
+</html>

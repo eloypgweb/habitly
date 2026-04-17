@@ -157,6 +157,17 @@ body {
   text-decoration: underline;
 }
 
+.auth-confirm-card {
+  text-align: center;
+}
+
+.auth-link-btn {
+  display: inline-flex;
+  justify-content: center;
+  text-decoration: none;
+  margin-top: 16px;
+}
+
 .auth-modal {
   position: fixed;
   inset: 0;

@@ -72,6 +72,16 @@ function isValidUsername(username) {
   return /^[a-z0-9_]{3,24}$/.test(username);
 }
 
+function getReadableAuthError(error, fallbackMessage) {
+  const rawMessage = String(error?.message ?? "").toLowerCase();
+
+  if (rawMessage.includes("email rate limit") || rawMessage.includes("rate limit exceeded")) {
+    return "Se enviaron demasiados correos en poco tiempo. Espera unos minutos y vuelve a intentarlo.";
+  }
+
+  return error?.message ?? fallbackMessage;
+}
+
 function bindPasswordToggles() {
   const toggleButtons = Array.from(document.querySelectorAll("[data-toggle-password]"));
 
@@ -124,7 +134,7 @@ async function handleLogin(event) {
     setFeedback("Sesion iniciada. Redirigiendo...", "success");
     window.location.href = "/";
   } catch (error) {
-    setFeedback(error?.message ?? "No se pudo iniciar sesion.", "error");
+    setFeedback(getReadableAuthError(error, "No se pudo iniciar sesion."), "error");
   } finally {
     setButtonLoading(submitBtn, false, "Entrar");
   }
@@ -172,7 +182,7 @@ async function handleRegister(event) {
     setFeedback("Cuenta creada. Revisa tu bandeja de entrada.", "success");
     openSuccessModalAndRedirect();
   } catch (error) {
-    setFeedback(error?.message ?? "No se pudo crear la cuenta.", "error");
+    setFeedback(getReadableAuthError(error, "No se pudo crear la cuenta."), "error");
   } finally {
     setButtonLoading(submitBtn, false, "Crear cuenta");
   }
