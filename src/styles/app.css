@@ -280,6 +280,10 @@ body[data-theme="forest"] {
   gap: 6px;
 }
 
+.task-search-shell[hidden] {
+  display: none;
+}
+
 .task-search-label {
   color: var(--muted);
   font-size: 0.74rem;

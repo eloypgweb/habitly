@@ -85,6 +85,7 @@ const refs = {
   syncStatus: document.getElementById("sync-status"),
   tabButtons: Array.from(document.querySelectorAll("[data-tab-trigger]")),
   views: Array.from(document.querySelectorAll("[data-view]")),
+  taskSearchShell: document.querySelector(".task-search-shell"),
   taskSearchInput: document.getElementById("task-search-input"),
   weekTitle: document.getElementById("week-title"),
   weekRange: document.getElementById("week-range"),
@@ -270,7 +271,15 @@ function normalizeSearchQuery(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
+function isSearchEnabledForActiveTab() {
+  return state.activeTab === "today" || state.activeTab === "week";
+}
+
 function matchesTaskQuery(task) {
+  if (!isSearchEnabledForActiveTab()) {
+    return true;
+  }
+
   const query = normalizeSearchQuery(state.filters.query);
   if (!query) {
     return true;
@@ -958,6 +967,10 @@ function setActiveTab(tabName) {
     const isActive = view.dataset.view === state.activeTab;
     view.classList.toggle("active", isActive);
   });
+
+  if (refs.taskSearchShell) {
+    refs.taskSearchShell.hidden = !isSearchEnabledForActiveTab();
+  }
 }
 
 function prefillTaskForm(task = null) {
