@@ -28,6 +28,16 @@ function getEmailRedirectTo() {
   return `${normalizedBase}/auth/confirm`;
 }
 
+function getPasswordResetRedirectTo() {
+  const base = PUBLIC_APP_URL || (typeof window !== "undefined" ? window.location.origin : "");
+  if (!base) {
+    return undefined;
+  }
+
+  const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+  return `${normalizedBase}/reset-password`;
+}
+
 function getClient() {
   if (!isConfigured()) {
     return null;
@@ -181,6 +191,38 @@ export async function signOutUser() {
   if (error) {
     throw error;
   }
+}
+
+export async function requestPasswordReset(email) {
+  const supabase = getClient();
+  if (!supabase) {
+    throw new Error("Supabase no configurado. Revisa variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY.");
+  }
+
+  const redirectTo = getPasswordResetRedirectTo();
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    ...(redirectTo ? { redirectTo } : {}),
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function updateUserPassword(password) {
+  const supabase = getClient();
+  if (!supabase) {
+    throw new Error("Supabase no configurado. Revisa variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY.");
+  }
+
+  const { data, error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    throw error;
+  }
+
+  return data;
 }
 
 export async function loadRemoteState() {

@@ -11,26 +11,15 @@
         <div id="profile-avatar-fallback" class="avatar-fallback">?</div>
       </div>
 
-      <div class="profile-fields">
-        <label>
-          <span>Nombre</span>
-          <input id="profile-name" type="text" maxlength="40" placeholder="Tu nombre" />
-        </label>
-
-        <label>
-          <span>Usuario</span>
-          <input id="profile-username" type="text" disabled />
-        </label>
-
-        <label>
-          <span>Correo</span>
-          <input id="profile-email" type="email" disabled />
-        </label>
+      <div class="profile-info">
+        <h3 id="profile-display-name" class="profile-display-name">Sin nombre</h3>
+        <p id="profile-username-text" class="profile-meta">@usuario</p>
+        <p id="profile-email-text" class="profile-meta">correo@ejemplo.com</p>
 
         <div class="profile-actions">
           <input id="profile-photo-input" type="file" accept="image/*" hidden />
           <button class="btn" id="choose-photo-btn" type="button">Elegir foto</button>
-          <button class="btn btn-primary" id="save-profile-btn" type="button">Guardar perfil</button>
+          <button class="btn btn-primary" id="open-name-modal-btn" type="button">Cambiar nombre</button>
           <button class="btn btn-danger" id="logout-btn" type="button">Cerrar sesion</button>
         </div>
       </div>
@@ -46,5 +35,139 @@
         <p id="profile-total-completed" class="stat-value">0h</p>
       </article>
     </div>
+
+    <section id="profile-rank-card" class="profile-rank-card" aria-label="Rango y progreso">
+      <div class="profile-rank-head">
+        <span id="profile-rank-badge" class="rank-badge">NOVATO</span>
+        <div>
+          <p id="profile-rank-name" class="rank-name">Novato</p>
+          <p id="profile-rank-xp" class="rank-xp">0 XP</p>
+        </div>
+      </div>
+
+      <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <div id="profile-rank-progress" class="progress-fill profile-rank-progress" style="width:0%"></div>
+      </div>
+      <p id="profile-next-rank" class="rank-next">0 XP para el siguiente rango</p>
+
+      <div class="profile-kpis">
+        <article class="summary-item">
+          <p class="stat-label">Racha actual</p>
+          <p id="profile-current-streak" class="stat-value">0</p>
+        </article>
+        <article class="summary-item">
+          <p class="stat-label">Mejor racha</p>
+          <p id="profile-best-streak" class="stat-value">0</p>
+        </article>
+        <article class="summary-item">
+          <p class="stat-label">Cumplimiento semanal</p>
+          <p id="profile-weekly-rate" class="stat-value">0%</p>
+        </article>
+        <article class="summary-item">
+          <p class="stat-label">Tareas vencidas</p>
+          <p id="profile-overdue-count" class="stat-value">0</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="profile-medals" aria-label="Medallas">
+      <header class="section-header">
+        <h3>Medallas</h3>
+        <span id="profile-medals-count" class="muted-pill">0 desbloqueadas</span>
+      </header>
+      <div id="profile-medals-list" class="medals-grid"></div>
+    </section>
+
+    <section class="profile-analytics" aria-label="Analytics personal">
+      <header class="section-header">
+        <h3>Analytics personal</h3>
+        <span class="muted-pill">Ultimos datos</span>
+      </header>
+      <div class="profile-kpis profile-analytics-grid">
+        <article class="summary-item">
+          <p class="stat-label">Cumplimiento 7 dias</p>
+          <p id="profile-analytics-week" class="stat-value">0%</p>
+        </article>
+        <article class="summary-item">
+          <p class="stat-label">Cumplimiento 30 dias</p>
+          <p id="profile-analytics-month" class="stat-value">0%</p>
+        </article>
+        <article class="summary-item">
+          <p class="stat-label">Franja top</p>
+          <p id="profile-analytics-best-hour" class="stat-value">-</p>
+        </article>
+        <article class="summary-item">
+          <p class="stat-label">Tipo dominante</p>
+          <p id="profile-analytics-top-type" class="stat-value">-</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="profile-heatmap" aria-label="Heatmap de consistencia">
+      <header class="section-header">
+        <h3>Heatmap de consistencia</h3>
+        <span class="muted-pill">12 semanas</span>
+      </header>
+      <div class="heatmap-legend" aria-hidden="true">
+        <span>Poco</span>
+        <div class="heatmap-legend-scale">
+          <span class="heat-intensity-0"></span>
+          <span class="heat-intensity-1"></span>
+          <span class="heat-intensity-2"></span>
+          <span class="heat-intensity-3"></span>
+          <span class="heat-intensity-4"></span>
+        </div>
+        <span>Mucho</span>
+      </div>
+      <div id="profile-heatmap-grid" class="heatmap-grid"></div>
+    </section>
+
+    <section class="profile-antiprocrastination" aria-label="Sistema anti-procrastinacion">
+      <header class="section-header">
+        <h3>Sistema anti-procrastinacion</h3>
+        <span class="muted-pill">Sugerencias</span>
+      </header>
+      <div id="profile-focus-suggestions" class="focus-suggestions"></div>
+    </section>
+
+    <section class="profile-themes" aria-label="Personalidad visual premium">
+      <header class="section-header">
+        <h3>Personalidad visual premium</h3>
+        <span class="muted-pill">3 temas</span>
+      </header>
+      <div class="theme-picker">
+        <button class="theme-btn" type="button" data-action="set-theme" data-theme="ocean">
+          <span class="theme-dot ocean"></span>
+          Ocean
+        </button>
+        <button class="theme-btn" type="button" data-action="set-theme" data-theme="sunset">
+          <span class="theme-dot sunset"></span>
+          Sunset
+        </button>
+        <button class="theme-btn" type="button" data-action="set-theme" data-theme="forest">
+          <span class="theme-dot forest"></span>
+          Forest
+        </button>
+      </div>
+    </section>
   </article>
+
+  <div id="profile-name-modal" class="modal" aria-hidden="true">
+    <div class="modal-card confirm-card">
+      <header class="modal-header">
+        <h3>Cambiar nombre</h3>
+        <button id="close-name-modal" class="icon-btn" type="button" aria-label="Close">X</button>
+      </header>
+      <form id="profile-name-form" class="task-form">
+        <label>
+          <span>Nombre visible</span>
+          <input id="profile-name-input" type="text" maxlength="40" placeholder="Tu nombre" required />
+        </label>
+        <footer class="modal-actions">
+          <button id="cancel-name-modal" class="btn" type="button">Cancelar</button>
+          <button class="btn btn-primary" type="submit">Guardar nombre</button>
+        </footer>
+      </form>
+    </div>
+  </div>
 </section>

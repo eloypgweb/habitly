@@ -18,6 +18,48 @@ const GOAL_COLORS = ["#67c8ff", "#5ad89d", "#ff8a65", "#f2c94c", "#bb86fc", "#ff
 const SAVE_DEBOUNCE_MS = 700;
 const RETRY_DELAY_MS = 4000;
 const IMPORT_MAX_BYTES = 1024 * 1024 * 2;
+const XP_PER_COMPLETED_TASK = 12;
+const XP_PENALTY_PER_OVERDUE_TASK = 4;
+const RANKS = [
+  { key: "novato", label: "Novato", minXp: 0 },
+  { key: "constante", label: "Constante", minXp: 100 },
+  { key: "enfocado", label: "Enfocado", minXp: 250 },
+  { key: "imparable", label: "Imparable", minXp: 500 },
+  { key: "elite", label: "Elite", minXp: 900 },
+];
+const THEMES = ["ocean", "sunset", "forest"];
+const MEDALS = [
+  {
+    key: "first_task",
+    title: "Primera victoria",
+    detail: "Completa tu primera tarea.",
+    unlocked: ({ completedTasks }) => completedTasks >= 1,
+  },
+  {
+    key: "solid_week",
+    title: "Semana solida",
+    detail: "Alcanza 80% en la semana actual.",
+    unlocked: ({ weeklyCompletionRatio, weeklyDueTasks }) => weeklyDueTasks > 0 && weeklyCompletionRatio >= 0.8,
+  },
+  {
+    key: "streak_7",
+    title: "7 dias en ritmo",
+    detail: "Consigue una racha de 7 dias.",
+    unlocked: ({ currentStreak }) => currentStreak >= 7,
+  },
+  {
+    key: "zero_debt",
+    title: "Cero deudas",
+    detail: "No dejes tareas vencidas.",
+    unlocked: ({ overdueTasks }) => overdueTasks === 0,
+  },
+  {
+    key: "marathon",
+    title: "Maraton",
+    detail: "Completa 100 tareas.",
+    unlocked: ({ completedTasks }) => completedTasks >= 100,
+  },
+];
 
 const state = {
   ...getDefaultState(),
@@ -30,6 +72,7 @@ const state = {
   pendingTaskDeletionId: "",
   filters: {
     type: "all",
+    query: "",
   },
 };
 
@@ -42,6 +85,7 @@ const refs = {
   syncStatus: document.getElementById("sync-status"),
   tabButtons: Array.from(document.querySelectorAll("[data-tab-trigger]")),
   views: Array.from(document.querySelectorAll("[data-view]")),
+  taskSearchInput: document.getElementById("task-search-input"),
   weekTitle: document.getElementById("week-title"),
   weekRange: document.getElementById("week-range"),
   todayTitle: document.getElementById("today-title"),
@@ -92,17 +136,41 @@ const refs = {
   taskPriority: document.getElementById("task-priority"),
   taskType: document.getElementById("task-type"),
   taskObjective: document.getElementById("task-objective"),
-  profileName: document.getElementById("profile-name"),
-  profileUsername: document.getElementById("profile-username"),
-  profileEmail: document.getElementById("profile-email"),
+  profileDisplayName: document.getElementById("profile-display-name"),
+  profileUsernameText: document.getElementById("profile-username-text"),
+  profileEmailText: document.getElementById("profile-email-text"),
   profileAvatar: document.getElementById("profile-avatar"),
   profileAvatarFallback: document.getElementById("profile-avatar-fallback"),
   profilePhotoInput: document.getElementById("profile-photo-input"),
   choosePhotoBtn: document.getElementById("choose-photo-btn"),
-  saveProfileBtn: document.getElementById("save-profile-btn"),
+  openNameModalBtn: document.getElementById("open-name-modal-btn"),
+  profileNameModal: document.getElementById("profile-name-modal"),
+  closeNameModal: document.getElementById("close-name-modal"),
+  cancelNameModal: document.getElementById("cancel-name-modal"),
+  profileNameForm: document.getElementById("profile-name-form"),
+  profileNameInput: document.getElementById("profile-name-input"),
   logoutBtn: document.getElementById("logout-btn"),
   profileTotalTasks: document.getElementById("profile-total-tasks"),
   profileTotalCompleted: document.getElementById("profile-total-completed"),
+  profileRankCard: document.getElementById("profile-rank-card"),
+  profileRankBadge: document.getElementById("profile-rank-badge"),
+  profileRankName: document.getElementById("profile-rank-name"),
+  profileRankXp: document.getElementById("profile-rank-xp"),
+  profileRankProgress: document.getElementById("profile-rank-progress"),
+  profileNextRank: document.getElementById("profile-next-rank"),
+  profileCurrentStreak: document.getElementById("profile-current-streak"),
+  profileBestStreak: document.getElementById("profile-best-streak"),
+  profileWeeklyRate: document.getElementById("profile-weekly-rate"),
+  profileOverdueCount: document.getElementById("profile-overdue-count"),
+  profileMedalsCount: document.getElementById("profile-medals-count"),
+  profileMedalsList: document.getElementById("profile-medals-list"),
+  profileAnalyticsWeek: document.getElementById("profile-analytics-week"),
+  profileAnalyticsMonth: document.getElementById("profile-analytics-month"),
+  profileAnalyticsBestHour: document.getElementById("profile-analytics-best-hour"),
+  profileAnalyticsTopType: document.getElementById("profile-analytics-top-type"),
+  profileHeatmapGrid: document.getElementById("profile-heatmap-grid"),
+  profileFocusSuggestions: document.getElementById("profile-focus-suggestions"),
+  themeButtons: Array.from(document.querySelectorAll("[data-action='set-theme']")),
 };
 
 const saveQueue = {
@@ -198,6 +266,18 @@ function normalizeType(value) {
   return value.trim().toLowerCase();
 }
 
+function normalizeSearchQuery(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function matchesTaskQuery(task) {
+  const query = normalizeSearchQuery(state.filters.query);
+  if (!query) {
+    return true;
+  }
+  return String(task.title ?? "").toLowerCase().includes(query);
+}
+
 function slotKey(day, hour) {
   return `${day}_${hour}`;
 }
@@ -234,6 +314,283 @@ function formatDateLabel(date) {
     day: "numeric",
     month: "long",
   }).format(date);
+}
+
+function getDayDiff(dateA, dateB) {
+  const dateAValue = parseDateString(dateA).setHours(0, 0, 0, 0);
+  const dateBValue = parseDateString(dateB).setHours(0, 0, 0, 0);
+  return Math.round((dateAValue - dateBValue) / (1000 * 60 * 60 * 24));
+}
+
+function isTaskOverdue(task, todayDateStr) {
+  return task.date < todayDateStr && !isTaskCompleted(task);
+}
+
+function getTasksByDate(taskList) {
+  return taskList.reduce((acc, task) => {
+    if (!acc[task.date]) {
+      acc[task.date] = [];
+    }
+    acc[task.date].push(task);
+    return acc;
+  }, {});
+}
+
+function getCompletionRatio(taskList) {
+  if (!taskList.length) {
+    return 0;
+  }
+  const completed = taskList.filter((task) => isTaskCompleted(task)).length;
+  return completed / taskList.length;
+}
+
+function normalizeTheme(value) {
+  return THEMES.includes(value) ? value : "ocean";
+}
+
+function applyTheme(themeName) {
+  const resolvedTheme = normalizeTheme(themeName);
+  document.body.dataset.theme = resolvedTheme;
+
+  refs.themeButtons.forEach((button) => {
+    const isActive = button.dataset.theme === resolvedTheme;
+    button.classList.toggle("active", isActive);
+  });
+}
+
+function calculateStreaks(todayDateStr) {
+  const tasksByDate = getTasksByDate(state.tasks.filter((task) => task.date <= todayDateStr));
+  const activeDates = Object.keys(tasksByDate).sort();
+
+  if (!activeDates.length) {
+    return { currentStreak: 0, bestStreak: 0 };
+  }
+
+  let currentStreak = 0;
+  let bestStreak = 0;
+  let rollingStreak = 0;
+
+  activeDates.forEach((date, index) => {
+    const ratio = getCompletionRatio(tasksByDate[date]);
+    const passesDay = ratio >= 0.8;
+
+    if (passesDay) {
+      if (index === 0 || getDayDiff(date, activeDates[index - 1]) === 1) {
+        rollingStreak += 1;
+      } else {
+        rollingStreak = 1;
+      }
+      bestStreak = Math.max(bestStreak, rollingStreak);
+    } else {
+      rollingStreak = 0;
+    }
+  });
+
+  for (let index = activeDates.length - 1; index >= 0; index -= 1) {
+    const date = activeDates[index];
+    const ratio = getCompletionRatio(tasksByDate[date]);
+    if (ratio < 0.8) {
+      break;
+    }
+
+    if (index < activeDates.length - 1) {
+      const previousDate = activeDates[index + 1];
+      if (getDayDiff(previousDate, date) !== 1) {
+        break;
+      }
+    }
+
+    currentStreak += 1;
+  }
+
+  return { currentStreak, bestStreak };
+}
+
+function calculateWeeklyCompletion() {
+  const weekStart = getWeekStart(new Date());
+  const weekEnd = addDays(weekStart, 6);
+  const weekStartStr = getDateString(weekStart);
+  const weekEndStr = getDateString(weekEnd);
+
+  const weeklyTasks = state.tasks.filter((task) => task.date >= weekStartStr && task.date <= weekEndStr);
+  const weeklyDueTasks = weeklyTasks.length;
+  const weeklyDoneTasks = weeklyTasks.filter((task) => isTaskCompleted(task)).length;
+
+  return {
+    weeklyDueTasks,
+    weeklyDoneTasks,
+    weeklyCompletionRatio: weeklyDueTasks > 0 ? weeklyDoneTasks / weeklyDueTasks : 0,
+  };
+}
+
+function resolveRank(xp) {
+  let currentRank = RANKS[0];
+  let nextRank = null;
+
+  for (let index = 0; index < RANKS.length; index += 1) {
+    const rank = RANKS[index];
+    if (xp >= rank.minXp) {
+      currentRank = rank;
+      nextRank = RANKS[index + 1] ?? null;
+    }
+  }
+
+  const currentFloor = currentRank.minXp;
+  const nextFloor = nextRank?.minXp ?? currentFloor;
+  const progressRatio = nextRank
+    ? Math.min((xp - currentFloor) / Math.max(nextFloor - currentFloor, 1), 1)
+    : 1;
+
+  return {
+    currentRank,
+    nextRank,
+    progressPercent: Math.round(progressRatio * 100),
+  };
+}
+
+function getGamificationMetrics() {
+  const todayDateStr = getDateString();
+  const completedTasks = state.tasks.filter((task) => isTaskCompleted(task)).length;
+  const overdueTasks = state.tasks.filter((task) => isTaskOverdue(task, todayDateStr)).length;
+  const xp = Math.max(0, completedTasks * XP_PER_COMPLETED_TASK - overdueTasks * XP_PENALTY_PER_OVERDUE_TASK);
+  const { currentStreak, bestStreak } = calculateStreaks(todayDateStr);
+  const weeklyStats = calculateWeeklyCompletion();
+  const rankState = resolveRank(xp);
+
+  const metrics = {
+    completedTasks,
+    overdueTasks,
+    xp,
+    currentStreak,
+    bestStreak,
+    ...weeklyStats,
+    ...rankState,
+  };
+
+  const medals = MEDALS.map((medal) => ({
+    key: medal.key,
+    title: medal.title,
+    detail: medal.detail,
+    unlocked: medal.unlocked(metrics),
+  }));
+
+  return {
+    ...metrics,
+    medals,
+    unlockedMedals: medals.filter((medal) => medal.unlocked).length,
+  };
+}
+
+function getRecentPeriodTasks(days, todayDateStr) {
+  const startDate = addDays(parseDateString(todayDateStr), -(days - 1));
+  const startDateStr = getDateString(startDate);
+  return state.tasks.filter((task) => task.date >= startDateStr && task.date <= todayDateStr);
+}
+
+function getProfileAnalytics() {
+  const todayDateStr = getDateString();
+  const tasks7d = getRecentPeriodTasks(7, todayDateStr);
+  const tasks30d = getRecentPeriodTasks(30, todayDateStr);
+  const completion7d = Math.round(getCompletionRatio(tasks7d) * 100);
+  const completion30d = Math.round(getCompletionRatio(tasks30d) * 100);
+
+  const completedTasks = state.tasks.filter((task) => isTaskCompleted(task));
+  const hourCount = new Map();
+  const typeCount = new Map();
+
+  completedTasks.forEach((task) => {
+    const hourLabel = `${String(task.startHour).padStart(2, "0")}:00`;
+    hourCount.set(hourLabel, (hourCount.get(hourLabel) ?? 0) + 1);
+
+    const normalizedType = normalizeType(task.type || "study") || "study";
+    typeCount.set(normalizedType, (typeCount.get(normalizedType) ?? 0) + 1);
+  });
+
+  const bestHour = [...hourCount.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Sin datos";
+  const topTypeRaw = [...typeCount.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Sin datos";
+  const topType = topTypeRaw === "Sin datos" ? topTypeRaw : topTypeRaw.charAt(0).toUpperCase() + topTypeRaw.slice(1);
+
+  return {
+    completion7d,
+    completion30d,
+    bestHour,
+    topType,
+  };
+}
+
+function getHeatmapCells(totalDays = 84) {
+  const today = new Date();
+  const dayTaskMap = new Map();
+
+  state.tasks.forEach((task) => {
+    if (!isTaskCompleted(task)) {
+      return;
+    }
+    dayTaskMap.set(task.date, (dayTaskMap.get(task.date) ?? 0) + 1);
+  });
+
+  const cells = [];
+  for (let offset = totalDays - 1; offset >= 0; offset -= 1) {
+    const date = addDays(today, -offset);
+    const dateStr = getDateString(date);
+    const count = dayTaskMap.get(dateStr) ?? 0;
+    const intensity = count >= 4 ? 4 : count;
+    cells.push({
+      date: dateStr,
+      count,
+      intensity,
+    });
+  }
+
+  return cells;
+}
+
+function getAntiProcrastinationSuggestions() {
+  const todayDateStr = getDateString();
+  const overdueTasks = state.tasks
+    .filter((task) => isTaskOverdue(task, todayDateStr))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const longPending = state.tasks
+    .filter((task) => !isTaskCompleted(task))
+    .filter((task) => calculateTaskDuration(task) >= 2)
+    .slice(0, 2);
+
+  const pendingByTitle = state.tasks
+    .filter((task) => !isTaskCompleted(task))
+    .reduce((acc, task) => {
+      const key = normalizeType(task.title || "");
+      if (!key) {
+        return acc;
+      }
+      acc.set(key, (acc.get(key) ?? 0) + 1);
+      return acc;
+    }, new Map());
+
+  const repeatedPending = [...pendingByTitle.entries()]
+    .filter(([, count]) => count >= 2)
+    .map(([title, count]) => ({ title, count }))
+    .slice(0, 1);
+
+  const suggestions = [];
+
+  if (overdueTasks.length > 0) {
+    suggestions.push(`Tienes ${overdueTasks.length} tareas vencidas. Prioriza hoy la mas antigua: ${overdueTasks[0].title}.`);
+  }
+
+  longPending.forEach((task) => {
+    suggestions.push(`La tarea "${task.title}" es larga. Dividela en 2 o 3 bloques para desbloquear progreso rapido.`);
+  });
+
+  repeatedPending.forEach((entry) => {
+    suggestions.push(`Has repetido "${entry.title}" ${entry.count} veces sin cerrar. Crea una version minima accionable.`);
+  });
+
+  if (!suggestions.length) {
+    suggestions.push("Vas muy bien. Mantener 80% de cumplimiento semanal te hara subir de rango mas rapido.");
+  }
+
+  return suggestions.slice(0, 4);
 }
 
 function getTaskHourBlocks(task) {
@@ -574,6 +931,21 @@ function setGoalCreateModalOpen(open) {
   }
 }
 
+function setProfileNameModalOpen(open) {
+  if (!refs.profileNameModal) {
+    return;
+  }
+
+  refs.profileNameModal.classList.toggle("open", open);
+  refs.profileNameModal.setAttribute("aria-hidden", String(!open));
+
+  if (open && refs.profileNameInput) {
+    refs.profileNameInput.value = state.profile?.name || "";
+    refs.profileNameInput.focus();
+    refs.profileNameInput.select();
+  }
+}
+
 function setActiveTab(tabName) {
   state.activeTab = TAB_NAMES.includes(tabName) ? tabName : "today";
 
@@ -677,7 +1049,7 @@ function renderWeekHeader() {
 function renderTodaySummary() {
   const today = getDateString();
   const todayTasks = state.tasks
-    .filter((task) => task.date === today)
+    .filter((task) => task.date === today && matchesTaskQuery(task))
     .sort((a, b) => a.startHour - b.startHour);
 
   const pendingToday = todayTasks.filter((task) => !isTaskCompleted(task)).length;
@@ -736,6 +1108,9 @@ function renderWeekOverview() {
     const tasks = state.tasks
       .filter((task) => {
         if (task.date !== dayDateStr) {
+          return false;
+        }
+        if (!matchesTaskQuery(task)) {
           return false;
         }
         if (state.filters.type === "all") {
@@ -810,7 +1185,7 @@ function renderDayDetail() {
 
   const selectedDate = parseDateString(state.dayDetailDate);
   const selectedDayTasks = state.tasks
-    .filter((task) => task.date === state.dayDetailDate)
+    .filter((task) => task.date === state.dayDetailDate && matchesTaskQuery(task))
     .sort((a, b) => a.startHour - b.startHour);
 
   refs.dayDetailTitle.textContent = formatDateLong(selectedDate);
@@ -880,7 +1255,7 @@ function renderMonthView() {
   for (let dayNumber = 1; dayNumber <= totalDays; dayNumber += 1) {
     const cellDate = new Date(year, month, dayNumber);
     const cellDateStr = getDateString(cellDate);
-    const tasksForDay = state.tasks.filter((task) => task.date === cellDateStr);
+    const tasksForDay = state.tasks.filter((task) => task.date === cellDateStr && matchesTaskQuery(task));
     const completedForDay = state.completedHours.filter((entry) => entry.date === cellDateStr).length;
     const isToday = dayNumber === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
@@ -981,10 +1356,13 @@ function renderProfile() {
   const name = state.profile?.name?.trim() || "Sin nombre";
   const avatarDataUrl = state.profile?.avatarDataUrl || "";
   const initial = name[0]?.toUpperCase() || "?";
+  const usernameLabel = currentUserUsername === "No disponible" ? currentUserUsername : `@${currentUserUsername}`;
+  const metrics = getGamificationMetrics();
+  const remainingToNext = metrics.nextRank ? Math.max(metrics.nextRank.minXp - metrics.xp, 0) : 0;
 
-  refs.profileName.value = state.profile?.name || "";
-  refs.profileUsername.value = currentUserUsername;
-  refs.profileEmail.value = currentUserEmail;
+  refs.profileDisplayName.textContent = name;
+  refs.profileUsernameText.textContent = usernameLabel;
+  refs.profileEmailText.textContent = currentUserEmail;
   refs.profileAvatarFallback.textContent = initial;
 
   if (avatarDataUrl) {
@@ -998,6 +1376,64 @@ function renderProfile() {
 
   refs.profileTotalTasks.textContent = String(state.tasks.length);
   refs.profileTotalCompleted.textContent = `${state.completedHours.length}h`;
+  if (refs.profileRankCard) {
+    refs.profileRankCard.dataset.rank = metrics.currentRank.key;
+  }
+  refs.profileRankBadge.dataset.rank = metrics.currentRank.key;
+  refs.profileRankBadge.textContent = metrics.currentRank.label.toUpperCase();
+  refs.profileRankName.textContent = metrics.currentRank.label;
+  refs.profileRankXp.textContent = `${metrics.xp} XP`;
+  refs.profileRankProgress.style.width = `${metrics.progressPercent}%`;
+  refs.profileNextRank.textContent = metrics.nextRank
+    ? `${remainingToNext} XP para ${metrics.nextRank.label}`
+    : "Rango maximo alcanzado";
+  refs.profileCurrentStreak.textContent = String(metrics.currentStreak);
+  refs.profileBestStreak.textContent = String(metrics.bestStreak);
+  refs.profileWeeklyRate.textContent = `${Math.round(metrics.weeklyCompletionRatio * 100)}%`;
+  refs.profileOverdueCount.textContent = String(metrics.overdueTasks);
+  refs.profileMedalsCount.textContent = `${metrics.unlockedMedals}/${metrics.medals.length} desbloqueadas`;
+  refs.profileMedalsList.innerHTML = metrics.medals
+    .map((medal) => {
+      const unlockedClass = medal.unlocked ? "unlocked" : "locked";
+      const medalStatus = medal.unlocked ? "Desbloqueada" : "Bloqueada";
+      return `
+        <article class="medal-card ${unlockedClass}">
+          <p class="medal-title">${medal.title}</p>
+          <p class="medal-detail">${medal.detail}</p>
+          <p class="medal-status">${medalStatus}</p>
+        </article>
+      `;
+    })
+    .join("");
+
+  const analytics = getProfileAnalytics();
+  refs.profileAnalyticsWeek.textContent = `${analytics.completion7d}%`;
+  refs.profileAnalyticsMonth.textContent = `${analytics.completion30d}%`;
+  refs.profileAnalyticsBestHour.textContent = analytics.bestHour;
+  refs.profileAnalyticsTopType.textContent = analytics.topType;
+
+  const heatmapCells = getHeatmapCells();
+  refs.profileHeatmapGrid.innerHTML = heatmapCells
+    .map((cell) => {
+      return `<button class="heat-cell-btn heat-intensity-${cell.intensity}" type="button" data-action="open-day-detail" data-date="${cell.date}" title="${cell.date}: ${cell.count} tareas completadas"></button>`;
+    })
+    .join("");
+
+  const suggestions = getAntiProcrastinationSuggestions();
+  refs.profileFocusSuggestions.innerHTML = suggestions
+    .map((suggestion) => `<article class="focus-card"><p>${suggestion}</p></article>`)
+    .join("");
+
+  applyTheme(state.profile?.theme || "ocean");
+}
+
+function handleProfileNameSubmit(event) {
+  event.preventDefault();
+  const nameValue = refs.profileNameInput?.value?.trim() ?? "";
+  state.profile.name = nameValue;
+  saveAppState();
+  setProfileNameModalOpen(false);
+  renderProfile();
 }
 
 function renderAll() {
@@ -1263,6 +1699,14 @@ function handleClick(event) {
 
   if (action === "delete-goal") {
     promptDeleteGoal(trigger.dataset.goalId);
+    return;
+  }
+
+  if (action === "set-theme") {
+    const nextTheme = normalizeTheme(trigger.dataset.theme || "ocean");
+    state.profile.theme = nextTheme;
+    applyTheme(nextTheme);
+    saveAppState();
   }
 }
 
@@ -1356,6 +1800,11 @@ function bindEvents() {
     renderWeekOverview();
   });
 
+  refs.taskSearchInput?.addEventListener("input", (event) => {
+    state.filters.query = normalizeSearchQuery(event.target.value);
+    renderAll();
+  });
+
   refs.backToMonthBtn?.addEventListener("click", () => {
     closeDayDetail();
   });
@@ -1369,11 +1818,25 @@ function bindEvents() {
     readAvatarFile(selectedFile);
   });
 
-  refs.saveProfileBtn.addEventListener("click", () => {
-    state.profile.name = refs.profileName.value.trim();
-    saveAppState();
-    renderProfile();
+  refs.openNameModalBtn?.addEventListener("click", () => {
+    setProfileNameModalOpen(true);
   });
+
+  refs.closeNameModal?.addEventListener("click", () => {
+    setProfileNameModalOpen(false);
+  });
+
+  refs.cancelNameModal?.addEventListener("click", () => {
+    setProfileNameModalOpen(false);
+  });
+
+  refs.profileNameModal?.addEventListener("click", (event) => {
+    if (event.target === refs.profileNameModal) {
+      setProfileNameModalOpen(false);
+    }
+  });
+
+  refs.profileNameForm?.addEventListener("submit", handleProfileNameSubmit);
 
   refs.logoutBtn.addEventListener("click", async () => {
     try {

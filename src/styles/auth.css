@@ -157,6 +157,21 @@ body {
   text-decoration: underline;
 }
 
+.auth-inline-link {
+  margin: -2px 0 0;
+  text-align: right;
+  font-size: 0.82rem;
+}
+
+.auth-inline-link a {
+  color: var(--auth-accent);
+  text-decoration: none;
+}
+
+.auth-inline-link a:hover {
+  text-decoration: underline;
+}
+
 .auth-confirm-card {
   text-align: center;
 }

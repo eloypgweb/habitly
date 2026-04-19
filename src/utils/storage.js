@@ -10,6 +10,7 @@ const DEFAULT_STATE = {
   profile: {
     name: "",
     avatarDataUrl: "",
+    theme: "ocean",
   },
 };
 
@@ -105,6 +106,7 @@ function normalizeState(parsed = {}) {
     profile: {
       name: String(parsed.profile?.name ?? DEFAULT_STATE.profile.name),
       avatarDataUrl: String(parsed.profile?.avatarDataUrl ?? DEFAULT_STATE.profile.avatarDataUrl),
+      theme: String(parsed.profile?.theme ?? DEFAULT_STATE.profile.theme),
     },
   };
 }
@@ -114,6 +116,9 @@ function hasMeaningfulData(currentState) {
     return true;
   }
   if (currentState.profile.name || currentState.profile.avatarDataUrl) {
+    return true;
+  }
+  if (currentState.profile.theme && currentState.profile.theme !== DEFAULT_STATE.profile.theme) {
     return true;
   }
 

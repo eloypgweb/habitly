@@ -41,6 +41,16 @@ import "../styles/app.css";
 
 			<AppNavigation />
 
+			<section class="task-search-shell" aria-label="Buscar tareas">
+				<label class="task-search-label" for="task-search-input">Buscar tareas por titulo</label>
+				<input
+					id="task-search-input"
+					type="search"
+					placeholder="Escribe un titulo..."
+					autocomplete="off"
+				/>
+			</section>
+
 			<section class="views-wrap">
 				<TodayView />
 				<WeekView />
