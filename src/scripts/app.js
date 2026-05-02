@@ -28,6 +28,24 @@ const RANKS = [
   { key: "elite", label: "Elite", minXp: 900 },
 ];
 const THEMES = ["ocean", "sunset", "forest", "aurora", "hell", "heaven"];
+const THEME_LABELS = {
+  ocean: "Ocean",
+  sunset: "Sunset",
+  forest: "Forest",
+  aurora: "Aurora",
+  hell: "Hell",
+  heaven: "Heaven",
+};
+const AVATAR_PRESETS = [
+  { key: "dawn", label: "Aurora", grad1: "#ffd89b", grad2: "#7ec8ff", fg: "#17324f" },
+  { key: "mint", label: "Menta", grad1: "#9de7c2", grad2: "#72c8ff", fg: "#103247" },
+  { key: "ember", label: "Ascua", grad1: "#ffb27d", grad2: "#ff7f6e", fg: "#412018" },
+  { key: "violet", label: "Violeta", grad1: "#c9a8ff", grad2: "#7fb1ff", fg: "#1f1e4d" },
+  { key: "sun", label: "Sol", grad1: "#ffe082", grad2: "#f7c76b", fg: "#3b2a12" },
+  { key: "sea", label: "Mar", grad1: "#88e5ff", grad2: "#5bc6b9", fg: "#08343a" },
+  { key: "rose", label: "Rosa", grad1: "#ffb3c7", grad2: "#ff8aa5", fg: "#4d1e2b" },
+  { key: "onyx", label: "Onyx", grad1: "#6d7288", grad2: "#2f3447", fg: "#f2f7ff" },
+];
 const BATTLE_PASS_REWARDS = [
   {
     key: "mote_chispa",
@@ -65,6 +83,13 @@ const BATTLE_PASS_REWARDS = [
     effect: { theme: "heaven" },
   },
   {
+    key: "mote_nimbo",
+    minXp: 750,
+    title: "Mote: Nimbo",
+    detail: "Un mote ligero, flotante y con aire de altura.",
+    effect: { mote: "Nimbo" },
+  },
+  {
     key: "avatar_skin_neon",
     minXp: 800,
     title: "Avatar Neón",
@@ -77,6 +102,55 @@ const BATTLE_PASS_REWARDS = [
     title: "Mote: Leyenda",
     detail: "El cierre del pase para perfiles veteranos.",
     effect: { mote: "Leyenda" },
+  },
+  {
+    key: "avatar_skin_halo",
+    minXp: 1100,
+    title: "Marco Halo",
+    detail: "Un perfil más etéreo, con presencia luminosa.",
+    effect: { avatarSkin: "halo" },
+  },
+  {
+    key: "mote_alba",
+    minXp: 1200,
+    title: "Mote: Alba",
+    detail: "Suena a mañana limpia y a progreso temprano.",
+    effect: { mote: "Alba" },
+  },
+  {
+    key: "avatar_skin_seraph",
+    minXp: 1300,
+    title: "Marco Serafín",
+    detail: "Un marco con acento celestial y más empaque visual.",
+    effect: { avatarSkin: "seraph" },
+  },
+  {
+    key: "mote_auriga",
+    minXp: 1400,
+    title: "Mote: Auriga",
+    detail: "Para quien ya va tirando del carro sin mirar atrás.",
+    effect: { mote: "Auriga" },
+  },
+  {
+    key: "avatar_skin_radiance",
+    minXp: 1500,
+    title: "Marco Radiance",
+    detail: "Más brillo, más presencia y un acabado más limpio.",
+    effect: { avatarSkin: "radiance" },
+  },
+  {
+    key: "mote_zenit",
+    minXp: 1600,
+    title: "Mote: Zenit",
+    detail: "El punto más alto del pase, con nombre de cima.",
+    effect: { mote: "Zenit" },
+  },
+  {
+    key: "avatar_skin_coro",
+    minXp: 1700,
+    title: "Marco Coro",
+    detail: "Un cierre coral, más solemne y más grande que el resto.",
+    effect: { avatarSkin: "coro" },
   },
 ];
 const MEDALS = [
@@ -197,6 +271,8 @@ const refs = {
   profileAvatarFallback: document.getElementById("profile-avatar-fallback"),
   profilePhotoInput: document.getElementById("profile-photo-input"),
   choosePhotoBtn: document.getElementById("choose-photo-btn"),
+  openAvatarModalBtn: document.getElementById("open-avatar-modal-btn"),
+  profileAvatarModal: document.getElementById("profile-avatar-modal"),
   openNameModalBtn: document.getElementById("open-name-modal-btn"),
   profileNameModal: document.getElementById("profile-name-modal"),
   closeNameModal: document.getElementById("close-name-modal"),
@@ -220,11 +296,21 @@ const refs = {
   profileBattlePassXp: document.getElementById("profile-battle-pass-xp"),
   profileBattlePassProgress: document.getElementById("profile-battle-pass-progress"),
   profileBattlePassNext: document.getElementById("profile-battle-pass-next"),
-  profileBattlePassList: document.getElementById("profile-battle-pass-list"),
+  profileBattlePassModal: document.getElementById("profile-battle-pass-modal"),
+  profileBattlePassModalCount: document.getElementById("profile-battle-pass-modal-count"),
+  profileBattlePassModalXp: document.getElementById("profile-battle-pass-modal-xp"),
+  profileBattlePassModalProgress: document.getElementById("profile-battle-pass-modal-progress"),
+  profileBattlePassModalList: document.getElementById("profile-battle-pass-modal-list"),
   profileMotesCount: document.getElementById("profile-motes-count"),
-  profileMotesList: document.getElementById("profile-motes-list"),
+  profileMotesModal: document.getElementById("profile-motes-modal"),
+  profileMotesModalList: document.getElementById("profile-motes-modal-list"),
+  profileThemesModal: document.getElementById("profile-themes-modal"),
   profileMedalsCount: document.getElementById("profile-medals-count"),
   profileMedalsList: document.getElementById("profile-medals-list"),
+  profileEquippedMoteName: document.getElementById("profile-equipped-mote-name"),
+  profileEquippedMoteDetail: document.getElementById("profile-equipped-mote-detail"),
+  profileEquippedThemeName: document.getElementById("profile-equipped-theme-name"),
+  profileEquippedThemeDetail: document.getElementById("profile-equipped-theme-detail"),
   profileAnalyticsWeek: document.getElementById("profile-analytics-week"),
   profileAnalyticsMonth: document.getElementById("profile-analytics-month"),
   profileAnalyticsBestHour: document.getElementById("profile-analytics-best-hour"),
@@ -427,6 +513,10 @@ function applyTheme(themeName) {
   });
 }
 
+function getThemeLabel(themeName) {
+  return THEME_LABELS[themeName] ?? themeName.charAt(0).toUpperCase() + themeName.slice(1);
+}
+
 function calculateStreaks(todayDateStr) {
   const tasksByDate = getTasksByDate(state.tasks.filter((task) => task.date <= todayDateStr));
   const activeDates = Object.keys(tasksByDate).sort();
@@ -554,18 +644,38 @@ function getClaimedBattlePassRewards() {
   return new Set(Array.isArray(state.profile?.battlePassClaimedRewards) ? state.profile.battlePassClaimedRewards : []);
 }
 
+function normalizeClaimedBattlePassRewards(claimedRewards) {
+  const validRewardKeys = new Set(BATTLE_PASS_REWARDS.map((reward) => reward.key));
+  const filteredClaims = [...claimedRewards].filter((key) => validRewardKeys.has(key));
+  const highestClaimedXp = filteredClaims.reduce((maxXp, rewardKey) => {
+    const reward = BATTLE_PASS_REWARDS.find((item) => item.key === rewardKey);
+    return reward ? Math.max(maxXp, reward.minXp) : maxXp;
+  }, 0);
+
+  const normalized = new Set(filteredClaims);
+  if (highestClaimedXp > 0) {
+    BATTLE_PASS_REWARDS.forEach((reward) => {
+      if (reward.minXp <= highestClaimedXp) {
+        normalized.add(reward.key);
+      }
+    });
+  }
+
+  return normalized;
+}
+
 function getBattlePassRewardByKey(rewardKey, rewards = getBattlePassRewards(getGamificationMetrics())) {
   return rewards.find((reward) => reward.key === rewardKey) ?? null;
 }
 
 function getBattlePassRewards(metrics) {
-  const claimedRewards = getClaimedBattlePassRewards();
+  const claimedRewards = normalizeClaimedBattlePassRewards(getClaimedBattlePassRewards());
 
   return BATTLE_PASS_REWARDS.map((reward) => ({
     ...reward,
     claimed: claimedRewards.has(reward.key),
     unlocked: metrics.xp >= reward.minXp,
-  }));
+  })).sort((leftReward, rightReward) => leftReward.minXp - rightReward.minXp);
 }
 
 function isThemeUnlocked(themeName, metrics, rewards = getBattlePassRewards(metrics)) {
@@ -586,7 +696,7 @@ function getBattlePassProgress(metrics, rewards = getBattlePassRewards(metrics))
     };
   }
 
-  const maxXp = rewards[rewards.length - 1].minXp;
+  const maxXp = rewards.reduce((highestXp, reward) => Math.max(highestXp, reward.minXp), 0);
   const progressPercent = maxXp > 0 ? Math.min(Math.round((metrics.xp / maxXp) * 100), 100) : 100;
   const nextReward = rewards.find((reward) => reward.unlocked && !reward.claimed) ?? rewards.find((reward) => !reward.unlocked) ?? null;
 
@@ -596,6 +706,102 @@ function getBattlePassProgress(metrics, rewards = getBattlePassRewards(metrics))
     unlockedCount: rewards.filter((reward) => reward.unlocked).length,
     nextReward,
   };
+}
+
+function setModalState(modalRef, open) {
+  if (!modalRef) {
+    return;
+  }
+
+  modalRef.classList.toggle("open", open);
+  modalRef.setAttribute("aria-hidden", String(!open));
+  updateModalScrollLock();
+}
+
+function updateModalScrollLock() {
+  const modalRefs = [
+    refs.taskModal,
+    refs.goalCreateModal,
+    refs.confirmGoalModal,
+    refs.confirmTaskModal,
+    refs.profileNameModal,
+    refs.profileBattlePassModal,
+    refs.profileMotesModal,
+    refs.profileThemesModal,
+    refs.profileAvatarModal,
+  ].filter(Boolean);
+
+  const hasOpenModal = modalRefs.some((modal) => modal.classList.contains("open"));
+  document.body.classList.toggle("modal-open", hasOpenModal);
+}
+
+function areSetsEqual(leftSet, rightSet) {
+  if (leftSet.size !== rightSet.size) {
+    return false;
+  }
+
+  for (const value of leftSet) {
+    if (!rightSet.has(value)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function setBattlePassModalOpen(open) {
+  setModalState(refs.profileBattlePassModal, open);
+}
+
+function setMotesModalOpen(open) {
+  setModalState(refs.profileMotesModal, open);
+}
+
+function setThemesModalOpen(open) {
+  setModalState(refs.profileThemesModal, open);
+}
+
+function setAvatarModalOpen(open) {
+  setModalState(refs.profileAvatarModal, open);
+}
+
+function getInitialForAvatar(nameValue) {
+  const cleanName = String(nameValue ?? "").trim();
+  return cleanName ? cleanName[0].toUpperCase() : "?";
+}
+
+function buildAvatarPresetDataUrl(presetKey, nameValue) {
+  const preset = AVATAR_PRESETS.find((item) => item.key === presetKey);
+  if (!preset) {
+    return "";
+  }
+
+  const initial = getInitialForAvatar(nameValue);
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'>
+    <defs>
+      <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0%' stop-color='${preset.grad1}'/>
+        <stop offset='100%' stop-color='${preset.grad2}'/>
+      </linearGradient>
+    </defs>
+    <rect width='240' height='240' fill='url(#g)'/>
+    <circle cx='120' cy='120' r='92' fill='rgba(255,255,255,0.18)'/>
+    <text x='120' y='148' text-anchor='middle' font-family='Sora,Segoe UI,sans-serif' font-size='112' font-weight='800' fill='${preset.fg}'>${initial}</text>
+  </svg>`;
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+function selectAvatarPreset(presetKey) {
+  const avatarDataUrl = buildAvatarPresetDataUrl(presetKey, state.profile?.name || "");
+  if (!avatarDataUrl) {
+    return;
+  }
+
+  state.profile.avatarDataUrl = avatarDataUrl;
+  saveAppState({ immediate: true });
+  setAvatarModalOpen(false);
+  renderProfile();
 }
 
 function claimBattlePassReward(rewardKey) {
@@ -633,6 +839,101 @@ function equipBattlePassMote(rewardKey) {
   state.profile.mote = reward.effect.mote;
   saveAppState({ immediate: true });
   renderProfile();
+}
+
+function renderBattlePassModal(metrics, battlePassRewards, battlePassProgress) {
+  if (!refs.profileBattlePassModalList) {
+    return;
+  }
+
+  if (refs.profileBattlePassModalCount) {
+    refs.profileBattlePassModalCount.textContent = `${battlePassProgress.claimedCount}/${battlePassRewards.length}`;
+  }
+
+  if (refs.profileBattlePassModalXp) {
+    refs.profileBattlePassModalXp.textContent = `${metrics.xp} XP`;
+  }
+
+  if (refs.profileBattlePassModalProgress) {
+    refs.profileBattlePassModalProgress.style.width = `${battlePassProgress.progressPercent}%`;
+  }
+
+  const maxXp = battlePassRewards[battlePassRewards.length - 1]?.minXp ?? 0;
+  refs.profileBattlePassModalList.innerHTML = battlePassRewards
+    .map((reward) => {
+      const rewardPosition = maxXp > 0 ? Math.round((reward.minXp / maxXp) * 100) : 0;
+      const stateLabel = reward.claimed
+        ? "Reclamado"
+        : reward.unlocked
+          ? "Listo para reclamar"
+          : `Bloqueado en ${reward.minXp} XP`;
+      const actionButton = reward.claimed
+        ? `<button class="btn btn-small" type="button" disabled>Reclamado</button>`
+        : reward.unlocked
+          ? `<button class="btn btn-small btn-primary" type="button" data-action="claim-battle-pass" data-reward-key="${reward.key}">Reclamar</button>`
+          : `<button class="btn btn-small" type="button" disabled>Bloqueado</button>`;
+
+      return `
+        <article class="battle-pass-node ${reward.claimed ? "claimed" : reward.unlocked ? "unlocked" : "locked"}" style="--reward-position:${rewardPosition}%">
+          <p class="battle-pass-node-xp">${reward.minXp} XP</p>
+          <div class="battle-pass-node-card">
+            <h4 class="battle-pass-node-title">${reward.title}</h4>
+            <p class="battle-pass-node-detail">${reward.detail}</p>
+            <div class="battle-pass-node-footer">
+              <span class="battle-pass-node-state">${stateLabel}</span>
+              ${actionButton}
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  if (refs.profileBattlePassModal) {
+    refs.profileBattlePassModal.dataset.claimedCount = String(battlePassProgress.claimedCount);
+    refs.profileBattlePassModal.dataset.xp = String(metrics.xp);
+  }
+}
+
+function renderMoteModal(claimedMotes, equippedMoteReward) {
+  if (!refs.profileMotesModalList) {
+    return;
+  }
+
+  refs.profileMotesModalList.innerHTML = claimedMotes.length
+    ? claimedMotes
+        .map((reward) => {
+          const isEquipped = reward.key === equippedMoteReward?.key;
+          return `
+            <article class="mote-card ${isEquipped ? "equipped" : "available"}">
+              <p class="mote-title">${reward.title}</p>
+              <p class="mote-detail">${reward.detail}</p>
+              <div class="mote-footer">
+                <span class="mote-state">${isEquipped ? "Equipado" : "Disponible"}</span>
+                <button class="btn btn-small ${isEquipped ? "" : "btn-primary"}" type="button" data-action="equip-battle-pass-mote" data-reward-key="${reward.key}" ${isEquipped ? "disabled" : ""}>${isEquipped ? "Equipado" : "Equipar"}</button>
+              </div>
+            </article>
+          `;
+        })
+        .join("")
+    : `<p class='empty-message'>Reclama un mote en el pase de batalla para poder equiparlo.</p>`;
+}
+
+function renderThemeModal(metrics, battlePassRewards, resolvedTheme) {
+  const unlockedThemes = THEMES.filter((themeName) => isThemeUnlocked(themeName, metrics, battlePassRewards));
+
+  refs.themeButtons.forEach((button) => {
+    const themeName = button.dataset.theme || "ocean";
+    const unlocked = unlockedThemes.includes(themeName);
+    button.disabled = !unlocked;
+    button.classList.toggle("locked", !unlocked);
+    button.setAttribute("aria-disabled", String(!unlocked));
+    button.title = unlocked ? `Cambiar a ${getThemeLabel(themeName)}` : `Bloqueado: se desbloquea con el pase de batalla`;
+  });
+
+  if (refs.profileThemesModal) {
+    refs.profileThemesModal.dataset.activeTheme = resolvedTheme;
+  }
 }
 
 function getRecentPeriodTasks(days, todayDateStr) {
@@ -1067,6 +1368,7 @@ function fillObjectiveField() {
 function setModalOpen(open) {
   refs.taskModal.classList.toggle("open", open);
   refs.taskModal.setAttribute("aria-hidden", String(!open));
+  updateModalScrollLock();
 
   if (open) {
     refs.taskTitle.focus();
@@ -1076,16 +1378,19 @@ function setModalOpen(open) {
 function setConfirmGoalModalOpen(open) {
   refs.confirmGoalModal.classList.toggle("open", open);
   refs.confirmGoalModal.setAttribute("aria-hidden", String(!open));
+  updateModalScrollLock();
 }
 
 function setConfirmTaskModalOpen(open) {
   refs.confirmTaskModal.classList.toggle("open", open);
   refs.confirmTaskModal.setAttribute("aria-hidden", String(!open));
+  updateModalScrollLock();
 }
 
 function setGoalCreateModalOpen(open) {
   refs.goalCreateModal.classList.toggle("open", open);
   refs.goalCreateModal.setAttribute("aria-hidden", String(!open));
+  updateModalScrollLock();
 
   if (open) {
     refs.goalName.focus();
@@ -1099,6 +1404,7 @@ function setProfileNameModalOpen(open) {
 
   refs.profileNameModal.classList.toggle("open", open);
   refs.profileNameModal.setAttribute("aria-hidden", String(!open));
+  updateModalScrollLock();
 
   if (open && refs.profileNameInput) {
     refs.profileNameInput.value = state.profile?.name || "";
@@ -1518,6 +1824,13 @@ function renderGoals() {
 }
 
 function renderProfile() {
+  const rawClaimedRewards = getClaimedBattlePassRewards();
+  const normalizedClaimedRewards = normalizeClaimedBattlePassRewards(rawClaimedRewards);
+  if (!areSetsEqual(rawClaimedRewards, normalizedClaimedRewards)) {
+    state.profile.battlePassClaimedRewards = Array.from(normalizedClaimedRewards);
+    saveAppState();
+  }
+
   const name = state.profile?.name?.trim() || "Sin nombre";
   const avatarDataUrl = state.profile?.avatarDataUrl || "";
   const initial = name[0]?.toUpperCase() || "?";
@@ -1548,6 +1861,22 @@ function renderProfile() {
   refs.profileEmailText.textContent = currentUserEmail;
   if (refs.profileMoteText) {
     refs.profileMoteText.textContent = activeMote;
+  }
+  if (refs.profileEquippedMoteName) {
+    refs.profileEquippedMoteName.textContent = activeMote;
+  }
+  if (refs.profileEquippedMoteDetail) {
+    refs.profileEquippedMoteDetail.textContent = claimedMotes.length
+      ? `${claimedMotes.length} motes desbloqueados. Pulsa cambiar para abrir tu colección.`
+      : "Todavía no tienes motes desbloqueados.";
+  }
+  if (refs.profileEquippedThemeName) {
+    refs.profileEquippedThemeName.textContent = getThemeLabel(resolvedTheme);
+  }
+  if (refs.profileEquippedThemeDetail) {
+    refs.profileEquippedThemeDetail.textContent = resolvedTheme === "ocean"
+      ? "Tema base siempre disponible."
+      : `${getThemeLabel(resolvedTheme)} está equipado y listo para usar.`;
   }
   refs.profileAvatarFallback.textContent = initial;
   if (refs.profileCard) {
@@ -1582,15 +1911,6 @@ function renderProfile() {
   refs.profileWeeklyRate.textContent = `${Math.round(metrics.weeklyCompletionRatio * 100)}%`;
   refs.profileOverdueCount.textContent = String(metrics.overdueTasks);
 
-  refs.themeButtons.forEach((button) => {
-    const themeName = button.dataset.theme || "ocean";
-    const unlocked = isThemeUnlocked(themeName, metrics, battlePassRewards);
-    button.disabled = !unlocked;
-    button.classList.toggle("locked", !unlocked);
-    button.setAttribute("aria-disabled", String(!unlocked));
-    button.title = unlocked ? `Cambiar a ${themeName}` : `Bloqueado: se desbloquea con el pase de batalla`;
-  });
-
   if (refs.profileBattlePassCount) {
     refs.profileBattlePassCount.textContent = `${battlePassProgress.claimedCount}/${battlePassRewards.length} reclamadas`;
   }
@@ -1607,53 +1927,13 @@ function renderProfile() {
         : `${battlePassProgress.nextReward.minXp - metrics.xp} XP para ${battlePassProgress.nextReward.title}`
       : "Pase de batalla completado";
   }
-  if (refs.profileBattlePassList) {
-    refs.profileBattlePassList.innerHTML = battlePassRewards
-      .map((reward) => {
-        const stateLabel = reward.claimed ? "Reclamado" : reward.unlocked ? "Listo para reclamar" : `Bloqueado en ${reward.minXp} XP`;
-        const actionButton = reward.claimed
-          ? `<button class="btn btn-small" type="button" disabled>Reclamado</button>`
-          : reward.unlocked
-            ? `<button class="btn btn-small btn-primary" type="button" data-action="claim-battle-pass" data-reward-key="${reward.key}">Reclamar</button>`
-            : `<button class="btn btn-small" type="button" disabled>Bloqueado</button>`;
-
-        return `
-          <article class="battle-pass-card ${reward.claimed ? "claimed" : reward.unlocked ? "unlocked" : "locked"}">
-            <p class="battle-pass-xp">${reward.minXp} XP</p>
-            <h4 class="battle-pass-title">${reward.title}</h4>
-            <p class="battle-pass-detail">${reward.detail}</p>
-            <div class="battle-pass-footer">
-              <span class="battle-pass-state">${stateLabel}</span>
-              ${actionButton}
-            </div>
-          </article>
-        `;
-      })
-      .join("");
-  }
+  renderBattlePassModal(metrics, battlePassRewards, battlePassProgress);
 
   if (refs.profileMotesCount) {
     refs.profileMotesCount.textContent = `${claimedMotes.length} disponibles`;
   }
-  if (refs.profileMotesList) {
-    refs.profileMotesList.innerHTML = claimedMotes.length
-      ? claimedMotes
-          .map((reward) => {
-            const isEquipped = reward.key === equippedMoteReward?.key;
-            return `
-              <article class="mote-card ${isEquipped ? "equipped" : "available"}">
-                <p class="mote-title">${reward.title}</p>
-                <p class="mote-detail">${reward.detail}</p>
-                <div class="mote-footer">
-                  <span class="mote-state">${isEquipped ? "Equipado" : "Disponible"}</span>
-                  <button class="btn btn-small ${isEquipped ? "" : "btn-primary"}" type="button" data-action="equip-battle-pass-mote" data-reward-key="${reward.key}" ${isEquipped ? "disabled" : ""}>${isEquipped ? "Equipado" : "Equipar"}</button>
-                </div>
-              </article>
-            `;
-          })
-          .join("")
-      : `<p class='empty-message'>Reclama un mote en el pase de batalla para poder equiparlo.</p>`;
-  }
+  renderMoteModal(claimedMotes, equippedMoteReward);
+  renderThemeModal(metrics, battlePassRewards, resolvedTheme);
 
   refs.profileMedalsCount.textContent = `${metrics.unlockedMedals}/${metrics.medals.length} desbloqueadas`;
   refs.profileMedalsList.innerHTML = metrics.medals
@@ -1983,6 +2263,51 @@ function handleClick(event) {
     return;
   }
 
+  if (action === "open-battle-pass-modal") {
+    setBattlePassModalOpen(true);
+    return;
+  }
+
+  if (action === "open-motes-modal") {
+    setMotesModalOpen(true);
+    return;
+  }
+
+  if (action === "open-themes-modal") {
+    setThemesModalOpen(true);
+    return;
+  }
+
+  if (action === "open-avatar-modal") {
+    setAvatarModalOpen(true);
+    return;
+  }
+
+  if (action === "close-battle-pass-modal") {
+    setBattlePassModalOpen(false);
+    return;
+  }
+
+  if (action === "close-motes-modal") {
+    setMotesModalOpen(false);
+    return;
+  }
+
+  if (action === "close-themes-modal") {
+    setThemesModalOpen(false);
+    return;
+  }
+
+  if (action === "close-avatar-modal") {
+    setAvatarModalOpen(false);
+    return;
+  }
+
+  if (action === "select-avatar-preset") {
+    selectAvatarPreset(trigger.dataset.avatarPreset || "");
+    return;
+  }
+
   if (action === "claim-battle-pass") {
     claimBattlePassReward(trigger.dataset.rewardKey || "");
     return;
@@ -2120,6 +2445,16 @@ function bindEvents() {
     }
   });
 
+  refs.openAvatarModalBtn?.addEventListener("click", () => {
+    setAvatarModalOpen(true);
+  });
+
+  refs.profileAvatarModal?.addEventListener("click", (event) => {
+    if (event.target === refs.profileAvatarModal) {
+      setAvatarModalOpen(false);
+    }
+  });
+
   refs.profileNameForm?.addEventListener("submit", handleProfileNameSubmit);
 
   refs.logoutBtn.addEventListener("click", async () => {
@@ -2128,6 +2463,24 @@ function bindEvents() {
       window.location.href = "/login";
     } catch (error) {
       console.error("Habitly: no se pudo cerrar sesion.", error);
+    }
+  });
+
+  refs.profileBattlePassModal?.addEventListener("click", (event) => {
+    if (event.target === refs.profileBattlePassModal) {
+      setBattlePassModalOpen(false);
+    }
+  });
+
+  refs.profileMotesModal?.addEventListener("click", (event) => {
+    if (event.target === refs.profileMotesModal) {
+      setMotesModalOpen(false);
+    }
+  });
+
+  refs.profileThemesModal?.addEventListener("click", (event) => {
+    if (event.target === refs.profileThemesModal) {
+      setThemesModalOpen(false);
     }
   });
 
@@ -2152,6 +2505,22 @@ function migrateTasks() {
       endHour: task.duration ? Math.floor(task.hour + task.duration) : null,
       endMinute: 0,
     };
+  });
+}
+
+function moveProfileModalsToBody() {
+  const profileModalRefs = [
+    refs.profileBattlePassModal,
+    refs.profileMotesModal,
+    refs.profileThemesModal,
+    refs.profileAvatarModal,
+    refs.profileNameModal,
+  ].filter(Boolean);
+
+  profileModalRefs.forEach((modalRef) => {
+    if (modalRef.parentElement !== document.body) {
+      document.body.appendChild(modalRef);
+    }
   });
 }
 
@@ -2195,6 +2564,7 @@ async function startApp() {
   migrateTasks();
   sanitizeObjectives();
   state.weekCursor = getWeekStart(new Date());
+  moveProfileModalsToBody();
   fillDayAndHourFields();
   fillObjectiveField();
   renderAll();
