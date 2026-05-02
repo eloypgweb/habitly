@@ -11,6 +11,10 @@ const DEFAULT_STATE = {
     name: "",
     avatarDataUrl: "",
     theme: "ocean",
+    battlePassClaimedRewards: [],
+    equippedMoteKey: "",
+    mote: "",
+    avatarSkin: "classic",
   },
 };
 
@@ -107,6 +111,12 @@ function normalizeState(parsed = {}) {
       name: String(parsed.profile?.name ?? DEFAULT_STATE.profile.name),
       avatarDataUrl: String(parsed.profile?.avatarDataUrl ?? DEFAULT_STATE.profile.avatarDataUrl),
       theme: String(parsed.profile?.theme ?? DEFAULT_STATE.profile.theme),
+      battlePassClaimedRewards: Array.isArray(parsed.profile?.battlePassClaimedRewards)
+        ? parsed.profile.battlePassClaimedRewards.map(String)
+        : structuredClone(DEFAULT_STATE.profile.battlePassClaimedRewards),
+      equippedMoteKey: String(parsed.profile?.equippedMoteKey ?? DEFAULT_STATE.profile.equippedMoteKey),
+      mote: String(parsed.profile?.mote ?? DEFAULT_STATE.profile.mote),
+      avatarSkin: String(parsed.profile?.avatarSkin ?? DEFAULT_STATE.profile.avatarSkin),
     },
   };
 }

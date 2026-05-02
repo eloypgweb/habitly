@@ -27,7 +27,58 @@ const RANKS = [
   { key: "imparable", label: "Imparable", minXp: 500 },
   { key: "elite", label: "Elite", minXp: 900 },
 ];
-const THEMES = ["ocean", "sunset", "forest"];
+const THEMES = ["ocean", "sunset", "forest", "aurora", "hell", "heaven"];
+const BATTLE_PASS_REWARDS = [
+  {
+    key: "mote_chispa",
+    minXp: 60,
+    title: "Mote: Chispa",
+    detail: "Un apodo corto para marcar el arranque del pase.",
+    effect: { mote: "Chispa" },
+  },
+  {
+    key: "theme_aurora",
+    minXp: 150,
+    title: "Tema Aurora",
+    detail: "Un cielo nocturno con cian, violeta y destellos fríos.",
+    effect: { theme: "aurora" },
+  },
+  {
+    key: "mote_ritmo",
+    minXp: 300,
+    title: "Mote: Ritmo",
+    detail: "Un mote para cuando ya dominas el compás.",
+    effect: { mote: "Ritmo" },
+  },
+  {
+    key: "theme_hell",
+    minXp: 450,
+    title: "Tema Hell",
+    detail: "Negros, rojos y naranjas para una estética más agresiva.",
+    effect: { theme: "hell" },
+  },
+  {
+    key: "theme_heaven",
+    minXp: 650,
+    title: "Tema Heaven",
+    detail: "Blancos, pastel, azules y dorados para un acabado limpio.",
+    effect: { theme: "heaven" },
+  },
+  {
+    key: "avatar_skin_neon",
+    minXp: 800,
+    title: "Avatar Neón",
+    detail: "Un marco vibrante para perfiles más activos.",
+    effect: { avatarSkin: "neon" },
+  },
+  {
+    key: "mote_legend",
+    minXp: 1000,
+    title: "Mote: Leyenda",
+    detail: "El cierre del pase para perfiles veteranos.",
+    effect: { mote: "Leyenda" },
+  },
+];
 const MEDALS = [
   {
     key: "first_task",
@@ -140,6 +191,8 @@ const refs = {
   profileDisplayName: document.getElementById("profile-display-name"),
   profileUsernameText: document.getElementById("profile-username-text"),
   profileEmailText: document.getElementById("profile-email-text"),
+  profileMoteText: document.getElementById("profile-mote-text"),
+  profileCard: document.querySelector(".profile-card"),
   profileAvatar: document.getElementById("profile-avatar"),
   profileAvatarFallback: document.getElementById("profile-avatar-fallback"),
   profilePhotoInput: document.getElementById("profile-photo-input"),
@@ -163,6 +216,13 @@ const refs = {
   profileBestStreak: document.getElementById("profile-best-streak"),
   profileWeeklyRate: document.getElementById("profile-weekly-rate"),
   profileOverdueCount: document.getElementById("profile-overdue-count"),
+  profileBattlePassCount: document.getElementById("profile-battle-pass-count"),
+  profileBattlePassXp: document.getElementById("profile-battle-pass-xp"),
+  profileBattlePassProgress: document.getElementById("profile-battle-pass-progress"),
+  profileBattlePassNext: document.getElementById("profile-battle-pass-next"),
+  profileBattlePassList: document.getElementById("profile-battle-pass-list"),
+  profileMotesCount: document.getElementById("profile-motes-count"),
+  profileMotesList: document.getElementById("profile-motes-list"),
   profileMedalsCount: document.getElementById("profile-medals-count"),
   profileMedalsList: document.getElementById("profile-medals-list"),
   profileAnalyticsWeek: document.getElementById("profile-analytics-week"),
@@ -490,6 +550,91 @@ function getGamificationMetrics() {
   };
 }
 
+function getClaimedBattlePassRewards() {
+  return new Set(Array.isArray(state.profile?.battlePassClaimedRewards) ? state.profile.battlePassClaimedRewards : []);
+}
+
+function getBattlePassRewardByKey(rewardKey, rewards = getBattlePassRewards(getGamificationMetrics())) {
+  return rewards.find((reward) => reward.key === rewardKey) ?? null;
+}
+
+function getBattlePassRewards(metrics) {
+  const claimedRewards = getClaimedBattlePassRewards();
+
+  return BATTLE_PASS_REWARDS.map((reward) => ({
+    ...reward,
+    claimed: claimedRewards.has(reward.key),
+    unlocked: metrics.xp >= reward.minXp,
+  }));
+}
+
+function isThemeUnlocked(themeName, metrics, rewards = getBattlePassRewards(metrics)) {
+  if (themeName === "ocean" || themeName === "sunset" || themeName === "forest") {
+    return true;
+  }
+
+  return rewards.some((reward) => reward.effect?.theme === themeName && reward.claimed);
+}
+
+function getBattlePassProgress(metrics, rewards = getBattlePassRewards(metrics)) {
+  if (!rewards.length) {
+    return {
+      progressPercent: 0,
+      claimedCount: 0,
+      unlockedCount: 0,
+      nextReward: null,
+    };
+  }
+
+  const maxXp = rewards[rewards.length - 1].minXp;
+  const progressPercent = maxXp > 0 ? Math.min(Math.round((metrics.xp / maxXp) * 100), 100) : 100;
+  const nextReward = rewards.find((reward) => reward.unlocked && !reward.claimed) ?? rewards.find((reward) => !reward.unlocked) ?? null;
+
+  return {
+    progressPercent,
+    claimedCount: rewards.filter((reward) => reward.claimed).length,
+    unlockedCount: rewards.filter((reward) => reward.unlocked).length,
+    nextReward,
+  };
+}
+
+function claimBattlePassReward(rewardKey) {
+  const metrics = getGamificationMetrics();
+  const reward = BATTLE_PASS_REWARDS.find((item) => item.key === rewardKey);
+  if (!reward || metrics.xp < reward.minXp) {
+    return;
+  }
+
+  const claimedRewards = new Set(Array.isArray(state.profile?.battlePassClaimedRewards) ? state.profile.battlePassClaimedRewards : []);
+  claimedRewards.add(reward.key);
+  state.profile.battlePassClaimedRewards = Array.from(claimedRewards);
+
+  if (reward.effect?.theme) {
+    state.profile.theme = reward.effect.theme;
+  }
+  if (reward.effect?.avatarSkin) {
+    state.profile.avatarSkin = reward.effect.avatarSkin;
+  }
+
+  saveAppState({ immediate: true });
+  renderProfile();
+}
+
+function equipBattlePassMote(rewardKey) {
+  const metrics = getGamificationMetrics();
+  const rewards = getBattlePassRewards(metrics);
+  const reward = rewards.find((item) => item.key === rewardKey && item.claimed && item.effect?.mote);
+
+  if (!reward) {
+    return;
+  }
+
+  state.profile.equippedMoteKey = reward.key;
+  state.profile.mote = reward.effect.mote;
+  saveAppState({ immediate: true });
+  renderProfile();
+}
+
 function getRecentPeriodTasks(days, todayDateStr) {
   const startDate = addDays(parseDateString(todayDateStr), -(days - 1));
   const startDateStr = getDateString(startDate);
@@ -807,6 +952,13 @@ function validateImportedState(value) {
     profile: {
       name: String(payload.profile.name ?? ""),
       avatarDataUrl: String(payload.profile.avatarDataUrl ?? ""),
+      theme: String(payload.profile.theme ?? "ocean"),
+      battlePassClaimedRewards: Array.isArray(payload.profile.battlePassClaimedRewards)
+        ? payload.profile.battlePassClaimedRewards.map(String)
+        : [],
+      equippedMoteKey: String(payload.profile.equippedMoteKey ?? ""),
+      mote: String(payload.profile.mote ?? ""),
+      avatarSkin: String(payload.profile.avatarSkin ?? "classic"),
     },
   };
 }
@@ -1371,12 +1523,37 @@ function renderProfile() {
   const initial = name[0]?.toUpperCase() || "?";
   const usernameLabel = currentUserUsername === "No disponible" ? currentUserUsername : `@${currentUserUsername}`;
   const metrics = getGamificationMetrics();
+  const battlePassRewards = getBattlePassRewards(metrics);
+  const battlePassProgress = getBattlePassProgress(metrics, battlePassRewards);
   const remainingToNext = metrics.nextRank ? Math.max(metrics.nextRank.minXp - metrics.xp, 0) : 0;
+  const claimedMotes = battlePassRewards.filter((reward) => reward.claimed && reward.effect?.mote);
+  const equippedMoteReward =
+    battlePassRewards.find((reward) => reward.key === state.profile?.equippedMoteKey && reward.claimed && reward.effect?.mote) ??
+    claimedMotes.find((reward) => reward.effect?.mote === state.profile?.mote) ??
+    null;
+  if (!state.profile?.equippedMoteKey && equippedMoteReward) {
+    state.profile.equippedMoteKey = equippedMoteReward.key;
+  }
+  const activeMote = equippedMoteReward?.effect?.mote || state.profile?.mote?.trim() || "Sin mote";
+  const avatarSkin = state.profile?.avatarSkin || "classic";
+  const requestedTheme = state.profile?.theme || "ocean";
+  const resolvedTheme = isThemeUnlocked(requestedTheme, metrics, battlePassRewards) ? requestedTheme : "ocean";
+
+  if (resolvedTheme !== requestedTheme) {
+    state.profile.theme = resolvedTheme;
+  }
 
   refs.profileDisplayName.textContent = name;
   refs.profileUsernameText.textContent = usernameLabel;
   refs.profileEmailText.textContent = currentUserEmail;
+  if (refs.profileMoteText) {
+    refs.profileMoteText.textContent = activeMote;
+  }
   refs.profileAvatarFallback.textContent = initial;
+  if (refs.profileCard) {
+    refs.profileCard.dataset.avatarSkin = avatarSkin;
+  }
+  refs.profileAvatarFallback.dataset.avatarSkin = avatarSkin;
 
   if (avatarDataUrl) {
     refs.profileAvatar.src = avatarDataUrl;
@@ -1404,6 +1581,80 @@ function renderProfile() {
   refs.profileBestStreak.textContent = String(metrics.bestStreak);
   refs.profileWeeklyRate.textContent = `${Math.round(metrics.weeklyCompletionRatio * 100)}%`;
   refs.profileOverdueCount.textContent = String(metrics.overdueTasks);
+
+  refs.themeButtons.forEach((button) => {
+    const themeName = button.dataset.theme || "ocean";
+    const unlocked = isThemeUnlocked(themeName, metrics, battlePassRewards);
+    button.disabled = !unlocked;
+    button.classList.toggle("locked", !unlocked);
+    button.setAttribute("aria-disabled", String(!unlocked));
+    button.title = unlocked ? `Cambiar a ${themeName}` : `Bloqueado: se desbloquea con el pase de batalla`;
+  });
+
+  if (refs.profileBattlePassCount) {
+    refs.profileBattlePassCount.textContent = `${battlePassProgress.claimedCount}/${battlePassRewards.length} reclamadas`;
+  }
+  if (refs.profileBattlePassXp) {
+    refs.profileBattlePassXp.textContent = `${metrics.xp} XP`;
+  }
+  if (refs.profileBattlePassProgress) {
+    refs.profileBattlePassProgress.style.width = `${battlePassProgress.progressPercent}%`;
+  }
+  if (refs.profileBattlePassNext) {
+    refs.profileBattlePassNext.textContent = battlePassProgress.nextReward
+      ? battlePassProgress.nextReward.unlocked
+        ? `Listo para reclamar: ${battlePassProgress.nextReward.title}`
+        : `${battlePassProgress.nextReward.minXp - metrics.xp} XP para ${battlePassProgress.nextReward.title}`
+      : "Pase de batalla completado";
+  }
+  if (refs.profileBattlePassList) {
+    refs.profileBattlePassList.innerHTML = battlePassRewards
+      .map((reward) => {
+        const stateLabel = reward.claimed ? "Reclamado" : reward.unlocked ? "Listo para reclamar" : `Bloqueado en ${reward.minXp} XP`;
+        const actionButton = reward.claimed
+          ? `<button class="btn btn-small" type="button" disabled>Reclamado</button>`
+          : reward.unlocked
+            ? `<button class="btn btn-small btn-primary" type="button" data-action="claim-battle-pass" data-reward-key="${reward.key}">Reclamar</button>`
+            : `<button class="btn btn-small" type="button" disabled>Bloqueado</button>`;
+
+        return `
+          <article class="battle-pass-card ${reward.claimed ? "claimed" : reward.unlocked ? "unlocked" : "locked"}">
+            <p class="battle-pass-xp">${reward.minXp} XP</p>
+            <h4 class="battle-pass-title">${reward.title}</h4>
+            <p class="battle-pass-detail">${reward.detail}</p>
+            <div class="battle-pass-footer">
+              <span class="battle-pass-state">${stateLabel}</span>
+              ${actionButton}
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+  }
+
+  if (refs.profileMotesCount) {
+    refs.profileMotesCount.textContent = `${claimedMotes.length} disponibles`;
+  }
+  if (refs.profileMotesList) {
+    refs.profileMotesList.innerHTML = claimedMotes.length
+      ? claimedMotes
+          .map((reward) => {
+            const isEquipped = reward.key === equippedMoteReward?.key;
+            return `
+              <article class="mote-card ${isEquipped ? "equipped" : "available"}">
+                <p class="mote-title">${reward.title}</p>
+                <p class="mote-detail">${reward.detail}</p>
+                <div class="mote-footer">
+                  <span class="mote-state">${isEquipped ? "Equipado" : "Disponible"}</span>
+                  <button class="btn btn-small ${isEquipped ? "" : "btn-primary"}" type="button" data-action="equip-battle-pass-mote" data-reward-key="${reward.key}" ${isEquipped ? "disabled" : ""}>${isEquipped ? "Equipado" : "Equipar"}</button>
+                </div>
+              </article>
+            `;
+          })
+          .join("")
+      : `<p class='empty-message'>Reclama un mote en el pase de batalla para poder equiparlo.</p>`;
+  }
+
   refs.profileMedalsCount.textContent = `${metrics.unlockedMedals}/${metrics.medals.length} desbloqueadas`;
   refs.profileMedalsList.innerHTML = metrics.medals
     .map((medal) => {
@@ -1425,19 +1676,23 @@ function renderProfile() {
   refs.profileAnalyticsBestHour.textContent = analytics.bestHour;
   refs.profileAnalyticsTopType.textContent = analytics.topType;
 
-  const heatmapCells = getHeatmapCells();
-  refs.profileHeatmapGrid.innerHTML = heatmapCells
-    .map((cell) => {
-      return `<button class="heat-cell-btn heat-intensity-${cell.intensity}" type="button" data-action="open-day-detail" data-date="${cell.date}" title="${cell.date}: ${cell.count} tareas completadas"></button>`;
-    })
-    .join("");
+  if (refs.profileHeatmapGrid) {
+    const heatmapCells = getHeatmapCells();
+    refs.profileHeatmapGrid.innerHTML = heatmapCells
+      .map((cell) => {
+        return `<button class="heat-cell-btn heat-intensity-${cell.intensity}" type="button" data-action="open-day-detail" data-date="${cell.date}" title="${cell.date}: ${cell.count} tareas completadas"></button>`;
+      })
+      .join("");
+  }
 
-  const suggestions = getAntiProcrastinationSuggestions();
-  refs.profileFocusSuggestions.innerHTML = suggestions
-    .map((suggestion) => `<article class="focus-card"><p>${suggestion}</p></article>`)
-    .join("");
+  if (refs.profileFocusSuggestions) {
+    const suggestions = getAntiProcrastinationSuggestions();
+    refs.profileFocusSuggestions.innerHTML = suggestions
+      .map((suggestion) => `<article class="focus-card"><p>${suggestion}</p></article>`)
+      .join("");
+  }
 
-  applyTheme(state.profile?.theme || "ocean");
+  applyTheme(resolvedTheme);
 }
 
 function handleProfileNameSubmit(event) {
@@ -1717,9 +1972,25 @@ function handleClick(event) {
 
   if (action === "set-theme") {
     const nextTheme = normalizeTheme(trigger.dataset.theme || "ocean");
+    const metrics = getGamificationMetrics();
+    if (!isThemeUnlocked(nextTheme, metrics)) {
+      return;
+    }
     state.profile.theme = nextTheme;
     applyTheme(nextTheme);
     saveAppState();
+    renderProfile();
+    return;
+  }
+
+  if (action === "claim-battle-pass") {
+    claimBattlePassReward(trigger.dataset.rewardKey || "");
+    return;
+  }
+
+  if (action === "equip-battle-pass-mote") {
+    equipBattlePassMote(trigger.dataset.rewardKey || "");
+    return;
   }
 }
 

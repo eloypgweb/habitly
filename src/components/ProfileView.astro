@@ -15,6 +15,7 @@
         <h3 id="profile-display-name" class="profile-display-name">Sin nombre</h3>
         <p id="profile-username-text" class="profile-meta">@usuario</p>
         <p id="profile-email-text" class="profile-meta">correo@ejemplo.com</p>
+        <p id="profile-mote-text" class="profile-mote">Sin mote</p>
 
         <div class="profile-actions">
           <input id="profile-photo-input" type="file" accept="image/*" hidden />
@@ -70,6 +71,38 @@
       </div>
     </section>
 
+    <section class="profile-battle-pass" aria-label="Pase de batalla">
+      <header class="section-header">
+        <h3>Pase de batalla</h3>
+        <span id="profile-battle-pass-count" class="muted-pill">0 reclamadas</span>
+      </header>
+
+      <div class="battle-pass-summary">
+        <article class="summary-item">
+          <p class="stat-label">XP total</p>
+          <p id="profile-battle-pass-xp" class="stat-value">0 XP</p>
+        </article>
+        <article class="summary-item">
+          <p class="stat-label">Rango activo</p>
+          <p id="profile-battle-pass-next" class="stat-value">0 XP para la siguiente recompensa</p>
+        </article>
+      </div>
+
+      <div class="progress-track battle-pass-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <div id="profile-battle-pass-progress" class="progress-fill battle-pass-progress" style="width:0%"></div>
+      </div>
+
+      <div id="profile-battle-pass-list" class="battle-pass-grid"></div>
+    </section>
+
+    <section class="profile-motes" aria-label="Mis motes">
+      <header class="section-header">
+        <h3>Mis motes</h3>
+        <span id="profile-motes-count" class="muted-pill">0 disponibles</span>
+      </header>
+      <div id="profile-motes-list" class="motes-grid"></div>
+    </section>
+
     <section class="profile-medals" aria-label="Medallas">
       <header class="section-header">
         <h3>Medallas</h3>
@@ -103,6 +136,7 @@
       </div>
     </section>
 
+    <!--
     <section class="profile-heatmap" aria-label="Heatmap de consistencia">
       <header class="section-header">
         <h3>Heatmap de consistencia</h3>
@@ -129,11 +163,12 @@
       </header>
       <div id="profile-focus-suggestions" class="focus-suggestions"></div>
     </section>
+    -->
 
     <section class="profile-themes" aria-label="Personalidad visual premium">
       <header class="section-header">
         <h3>Personalidad visual premium</h3>
-        <span class="muted-pill">3 temas</span>
+        <span class="muted-pill">6 temas</span>
       </header>
       <div class="theme-picker">
         <button class="theme-btn" type="button" data-action="set-theme" data-theme="ocean">
@@ -148,7 +183,20 @@
           <span class="theme-dot forest"></span>
           Forest
         </button>
+        <button class="theme-btn theme-btn-locked" type="button" data-action="set-theme" data-theme="aurora" disabled>
+          <span class="theme-dot aurora"></span>
+          Aurora
+        </button>
+        <button class="theme-btn theme-btn-locked" type="button" data-action="set-theme" data-theme="hell" disabled>
+          <span class="theme-dot hell"></span>
+          Hell
+        </button>
+        <button class="theme-btn theme-btn-locked" type="button" data-action="set-theme" data-theme="heaven" disabled>
+          <span class="theme-dot heaven"></span>
+          Heaven
+        </button>
       </div>
+      <p class="theme-hint">Aurora, Hell y Heaven se desbloquean con el pase de batalla.</p>
     </section>
   </article>
 

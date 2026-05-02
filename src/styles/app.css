@@ -213,6 +213,181 @@ body[data-theme="forest"] {
     linear-gradient(170deg, #0b1512 0%, #0f221a 48%, #0c1b15 100%);
 }
 
+body[data-theme="aurora"] {
+  --brand: #86d1ff;
+  --brand-2: #cf8fff;
+  --muted: #bfd0ef;
+  --panel-bg: rgba(10, 18, 33, 0.84);
+  --hero-orb: rgba(207, 143, 255, 0.16);
+  --hero-grad-1: rgba(16, 23, 40, 0.94);
+  --hero-grad-2: rgba(9, 14, 28, 0.92);
+  --subtitle: #d7e6ff;
+  --card-border: rgba(160, 185, 255, 0.12);
+  --card-bg: rgba(8, 13, 24, 0.5);
+  --input-border: rgba(160, 185, 255, 0.22);
+  --input-bg: rgba(7, 11, 20, 0.42);
+  --task-bg: rgba(9, 15, 27, 0.48);
+  --task-done-bg: rgba(134, 209, 255, 0.14);
+  --chip-bg: rgba(160, 185, 255, 0.12);
+  --day-column-border: rgba(160, 185, 255, 0.14);
+  --day-column-bg: rgba(8, 14, 24, 0.66);
+  --month-cell-border: rgba(160, 185, 255, 0.18);
+  --month-cell-bg: rgba(7, 12, 21, 0.52);
+  --month-cell-hover-border: rgba(207, 143, 255, 0.66);
+  --month-cell-hover-bg: rgba(207, 143, 255, 0.14);
+  --month-cell-today-border: rgba(134, 209, 255, 0.9);
+  --month-cell-today-bg: rgba(134, 209, 255, 0.14);
+  --avatar-grad-1: #86d1ff;
+  --avatar-grad-2: #cf8fff;
+  --avatar-text: #08111b;
+  --profile-info-border: rgba(160, 185, 255, 0.14);
+  --profile-info-orb: rgba(207, 143, 255, 0.14);
+  --profile-info-bg: rgba(9, 15, 27, 0.56);
+  --profile-meta: #cbdaf0;
+  --btn-bg: rgba(160, 185, 255, 0.12);
+  --btn-primary-text: #08111b;
+  --btn-primary-1: #86d1ff;
+  --btn-primary-2: #cf8fff;
+  --btn-danger-bg: rgba(255, 124, 124, 0.34);
+  --fab-text: #08111b;
+  --fab-1: #86d1ff;
+  --fab-2: #cf8fff;
+  --fab-shadow: rgba(134, 209, 255, 0.3);
+  --overlay-bg: rgba(0, 0, 0, 0.66);
+  --modal-bg: #0d1424;
+  --sync-border: rgba(160, 185, 255, 0.24);
+  --sync-bg: rgba(160, 185, 255, 0.09);
+  --syncing-text: #dfeaff;
+  --syncing-border: rgba(207, 143, 255, 0.52);
+  --syncing-bg: rgba(207, 143, 255, 0.18);
+  --sync-ok-text: #ebfff5;
+  --sync-ok-border: rgba(134, 209, 255, 0.52);
+  --sync-ok-bg: rgba(134, 209, 255, 0.18);
+  background:
+    radial-gradient(circle at 15% 0%, rgba(207, 143, 255, 0.22), transparent 28%),
+    radial-gradient(circle at 78% 8%, rgba(134, 209, 255, 0.24), transparent 24%),
+    linear-gradient(170deg, #090f1b 0%, #121c31 46%, #08101d 100%);
+}
+
+body[data-theme="hell"] {
+  --brand: #ff8566;
+  --brand-2: #ffcf7a;
+  --muted: #e1b7b0;
+  --panel-bg: rgba(34, 13, 12, 0.84);
+  --hero-orb: rgba(255, 133, 102, 0.2);
+  --hero-grad-1: rgba(39, 13, 12, 0.94);
+  --hero-grad-2: rgba(22, 8, 8, 0.93);
+  --subtitle: #ffd9cf;
+  --card-border: rgba(255, 157, 116, 0.12);
+  --card-bg: rgba(24, 11, 10, 0.5);
+  --input-border: rgba(255, 157, 116, 0.22);
+  --input-bg: rgba(18, 8, 7, 0.44);
+  --task-bg: rgba(26, 12, 11, 0.5);
+  --task-done-bg: rgba(255, 133, 102, 0.16);
+  --chip-bg: rgba(255, 157, 116, 0.12);
+  --day-column-border: rgba(255, 157, 116, 0.14);
+  --day-column-bg: rgba(24, 10, 10, 0.66);
+  --month-cell-border: rgba(255, 157, 116, 0.18);
+  --month-cell-bg: rgba(24, 10, 10, 0.52);
+  --month-cell-hover-border: rgba(255, 133, 102, 0.7);
+  --month-cell-hover-bg: rgba(255, 133, 102, 0.16);
+  --month-cell-today-border: rgba(255, 207, 122, 0.92);
+  --month-cell-today-bg: rgba(255, 207, 122, 0.16);
+  --avatar-grad-1: #ff6d4d;
+  --avatar-grad-2: #ffcf7a;
+  --avatar-text: #2a100f;
+  --profile-info-border: rgba(255, 157, 116, 0.14);
+  --profile-info-orb: rgba(255, 133, 102, 0.16);
+  --profile-info-bg: rgba(24, 10, 10, 0.56);
+  --profile-meta: #e7bdb3;
+  --btn-bg: rgba(255, 157, 116, 0.12);
+  --btn-primary-text: #2a100f;
+  --btn-primary-1: #ff6d4d;
+  --btn-primary-2: #ffcf7a;
+  --btn-danger-bg: rgba(255, 124, 124, 0.34);
+  --fab-text: #2a100f;
+  --fab-1: #ff6d4d;
+  --fab-2: #ffcf7a;
+  --fab-shadow: rgba(255, 109, 77, 0.3);
+  --overlay-bg: rgba(0, 0, 0, 0.68);
+  --modal-bg: #2b1110;
+  --sync-border: rgba(255, 157, 116, 0.24);
+  --sync-bg: rgba(255, 157, 116, 0.09);
+  --syncing-text: #ffe8e2;
+  --syncing-border: rgba(255, 133, 102, 0.52);
+  --syncing-bg: rgba(255, 133, 102, 0.18);
+  --sync-ok-text: #ffe8e2;
+  --sync-ok-border: rgba(255, 207, 122, 0.52);
+  --sync-ok-bg: rgba(255, 207, 122, 0.18);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 109, 77, 0.22), transparent 28%),
+    radial-gradient(circle at 82% 6%, rgba(255, 207, 122, 0.2), transparent 22%),
+    linear-gradient(170deg, #120707 0%, #2d0d0c 44%, #0f0606 100%);
+}
+
+body[data-theme="heaven"] {
+  --text: #17253f;
+  --brand: #86d1ff;
+  --brand-2: #f2d58a;
+  --muted: #8fa5c6;
+  --border: rgba(134, 209, 255, 0.14);
+  --muted-pill-border: rgba(134, 209, 255, 0.14);
+  --danger: #c55353;
+  --warning: #c79f2a;
+  --success: #579b75;
+  --panel-bg: rgba(243, 247, 255, 0.88);
+  --hero-orb: rgba(134, 209, 255, 0.18);
+  --hero-grad-1: rgba(250, 252, 255, 0.98);
+  --hero-grad-2: rgba(236, 243, 255, 0.96);
+  --subtitle: #7186aa;
+  --card-border: rgba(134, 209, 255, 0.12);
+  --card-bg: rgba(255, 255, 255, 0.72);
+  --input-border: rgba(134, 209, 255, 0.22);
+  --input-bg: rgba(255, 255, 255, 0.82);
+  --task-bg: rgba(255, 255, 255, 0.78);
+  --task-done-bg: rgba(134, 209, 255, 0.12);
+  --chip-bg: rgba(134, 209, 255, 0.1);
+  --day-column-border: rgba(134, 209, 255, 0.12);
+  --day-column-bg: rgba(255, 255, 255, 0.78);
+  --month-cell-border: rgba(134, 209, 255, 0.16);
+  --month-cell-bg: rgba(255, 255, 255, 0.76);
+  --month-cell-hover-border: rgba(242, 213, 138, 0.72);
+  --month-cell-hover-bg: rgba(242, 213, 138, 0.16);
+  --month-cell-today-border: rgba(134, 209, 255, 0.9);
+  --month-cell-today-bg: rgba(134, 209, 255, 0.14);
+  --avatar-grad-1: #ffffff;
+  --avatar-grad-2: #f2d58a;
+  --avatar-text: #1b2c48;
+  --profile-info-border: rgba(134, 209, 255, 0.12);
+  --profile-info-orb: rgba(242, 213, 138, 0.18);
+  --profile-info-bg: rgba(255, 255, 255, 0.8);
+  --profile-meta: #667899;
+  --btn-bg: rgba(134, 209, 255, 0.1);
+  --btn-primary-text: #1b2c48;
+  --btn-primary-1: #ffffff;
+  --btn-primary-2: #f2d58a;
+  --btn-danger-text: #ffffff;
+  --btn-danger-bg: rgba(255, 124, 124, 0.2);
+  --fab-text: #1b2c48;
+  --fab-1: #ffffff;
+  --fab-2: #f2d58a;
+  --fab-shadow: rgba(134, 209, 255, 0.22);
+  --overlay-bg: rgba(33, 46, 74, 0.26);
+  --modal-bg: #ffffff;
+  --sync-border: rgba(134, 209, 255, 0.24);
+  --sync-bg: rgba(134, 209, 255, 0.08);
+  --syncing-text: #5271a5;
+  --syncing-border: rgba(242, 213, 138, 0.52);
+  --syncing-bg: rgba(242, 213, 138, 0.16);
+  --sync-ok-text: #5271a5;
+  --sync-ok-border: rgba(134, 209, 255, 0.52);
+  --sync-ok-bg: rgba(134, 209, 255, 0.16);
+  background:
+    radial-gradient(circle at 15% 0%, rgba(134, 209, 255, 0.24), transparent 28%),
+    radial-gradient(circle at 84% 4%, rgba(242, 213, 138, 0.22), transparent 24%),
+    linear-gradient(170deg, #f6f9ff 0%, #eef5ff 46%, #f7fbff 100%);
+}
+
 .app-shell {
   width: min(980px, 100%);
   margin: 0 auto;
@@ -853,12 +1028,40 @@ body[data-theme="forest"] {
 }
 
 .avatar-wrap {
+  position: relative;
   width: 92px;
   height: 92px;
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--input-border);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.32);
+}
+
+.profile-card[data-avatar-skin="neon"] .avatar-wrap {
+  border-color: rgba(147, 231, 186, 0.72);
+  box-shadow: 0 0 0 1px rgba(147, 231, 186, 0.25), 0 0 30px rgba(147, 231, 186, 0.18), 0 12px 26px rgba(0, 0, 0, 0.32);
+}
+
+.profile-card[data-avatar-skin="gold"] .avatar-wrap {
+  border-color: rgba(255, 215, 120, 0.7);
+  box-shadow: 0 0 0 1px rgba(255, 215, 120, 0.24), 0 0 28px rgba(255, 215, 120, 0.18), 0 12px 26px rgba(0, 0, 0, 0.32);
+}
+
+.profile-card[data-avatar-skin="neon"] .avatar-wrap::after,
+.profile-card[data-avatar-skin="gold"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.profile-card[data-avatar-skin="neon"] .avatar-wrap::after {
+  border: 1px solid rgba(147, 231, 186, 0.36);
+}
+
+.profile-card[data-avatar-skin="gold"] .avatar-wrap::after {
+  border: 1px solid rgba(255, 215, 120, 0.38);
 }
 
 .avatar-wrap img,
@@ -876,6 +1079,14 @@ body[data-theme="forest"] {
   color: var(--avatar-text);
   font-weight: 800;
   font-size: 2rem;
+}
+
+.avatar-fallback[data-avatar-skin="neon"] {
+  background: linear-gradient(135deg, #7ce0b0, #86d1ff);
+}
+
+.avatar-fallback[data-avatar-skin="gold"] {
+  background: linear-gradient(135deg, #ffd46f, #ffef9e);
 }
 
 .profile-info {
@@ -901,6 +1112,13 @@ body[data-theme="forest"] {
 
 .profile-meta + .profile-meta {
   margin-top: 3px;
+}
+
+.profile-mote {
+  margin: 7px 0 0;
+  color: var(--brand-2);
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
 .profile-actions {
@@ -1092,8 +1310,140 @@ body[data-theme="forest"] {
 .profile-analytics,
 .profile-heatmap,
 .profile-antiprocrastination,
+.profile-motes,
 .profile-themes {
   margin-top: 14px;
+}
+
+.profile-battle-pass {
+  margin-top: 14px;
+}
+
+.battle-pass-summary {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.battle-pass-track {
+  margin-top: 10px;
+}
+
+.battle-pass-progress {
+  background: linear-gradient(90deg, #ffd46f, #86d1ff, #93e7ba);
+}
+
+.battle-pass-grid {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.battle-pass-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.battle-pass-card.claimed {
+  border-color: rgba(147, 231, 186, 0.48);
+  background: rgba(147, 231, 186, 0.12);
+}
+
+.battle-pass-card.unlocked {
+  border-color: rgba(134, 209, 255, 0.45);
+  background: rgba(134, 209, 255, 0.1);
+}
+
+.battle-pass-card.locked {
+  opacity: 0.82;
+}
+
+.motes-grid {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.mote-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mote-card.equipped {
+  border-color: rgba(147, 231, 186, 0.48);
+  background: rgba(147, 231, 186, 0.12);
+}
+
+.mote-title {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
+.mote-detail {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.mote-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.mote-state {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.battle-pass-xp,
+.battle-pass-state,
+.theme-hint,
+.profile-mote {
+  margin: 0;
+}
+
+.battle-pass-xp {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.battle-pass-title {
+  margin: 6px 0 0;
+  font-size: 0.94rem;
+}
+
+.battle-pass-detail {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.battle-pass-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.battle-pass-state,
+.theme-hint {
+  color: var(--muted);
+  font-size: 0.74rem;
 }
 
 .profile-analytics-grid {
@@ -1218,6 +1568,12 @@ body[data-theme="forest"] {
   cursor: pointer;
 }
 
+.theme-btn.locked,
+.theme-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .theme-btn.active {
   border-color: rgba(147, 231, 186, 0.55);
   background: rgba(147, 231, 186, 0.16);
@@ -1242,12 +1598,29 @@ body[data-theme="forest"] {
   background: linear-gradient(120deg, #75e7ad, #84d7ff);
 }
 
+.theme-dot.aurora {
+  background: linear-gradient(120deg, #6ce6ff, #cf8fff, #93e7ba);
+}
+
+.theme-dot.hell {
+  background: linear-gradient(120deg, #2c0505, #ff5a3f, #ffcf66);
+}
+
+.theme-dot.heaven {
+  background: linear-gradient(120deg, #ffffff, #d5e6ff, #f2d58a);
+}
+
 .btn,
 .mini-btn,
 .icon-btn {
   background: var(--btn-bg);
   padding: 10px 11px;
   font-size: 0.82rem;
+}
+
+.btn.btn-small {
+  padding: 7px 10px;
+  font-size: 0.74rem;
 }
 
 .btn-primary {
@@ -1391,7 +1764,16 @@ body[data-theme="forest"] {
   }
 
   .theme-picker {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .battle-pass-summary {
     grid-template-columns: 1fr;
+  }
+
+  .battle-pass-footer {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .heatmap-grid {
@@ -1454,6 +1836,10 @@ body[data-theme="forest"] {
     margin-top: 5px;
     font-size: 0.61rem;
     font-weight: 600;
+  }
+
+  .theme-picker {
+    grid-template-columns: 1fr;
   }
 }
 
