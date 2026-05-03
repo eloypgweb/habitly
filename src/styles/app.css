@@ -1119,6 +1119,165 @@ body.modal-open {
     var(--profile-info-bg);
 }
 
+/* Decorative frames (marcos) for presets — do not replace the photo, only decorate it */
+.profile-card[data-avatar-skin="dawn"] .avatar-wrap {
+  border-color: rgba(255, 200, 120, 0.9);
+  box-shadow: 0 6px 18px rgba(255, 180, 80, 0.12), 0 0 20px rgba(255, 200, 120, 0.06) inset;
+}
+.profile-card[data-avatar-skin="dawn"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: 0 0 0 3px rgba(255,220,150,0.06) inset;
+}
+
+.profile-card[data-avatar-skin="mint"] .avatar-wrap {
+  border-color: rgba(120, 230, 190, 0.86);
+  box-shadow: 0 6px 18px rgba(80, 200, 150, 0.08), 0 0 18px rgba(120,230,190,0.06) inset;
+}
+.profile-card[data-avatar-skin="mint"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.02), transparent 15%);
+}
+
+.profile-card[data-avatar-skin="ember"] .avatar-wrap {
+  border-color: rgba(255,120,60,0.9);
+  box-shadow: 0 6px 22px rgba(255,100,40,0.16), 0 0 28px rgba(255,90,40,0.06) inset;
+}
+.profile-card[data-avatar-skin="ember"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 70% 30%, rgba(255,200,170,0.06), transparent 20%);
+}
+
+.profile-card[data-avatar-skin="violet"] .avatar-wrap {
+  border-color: rgba(160,120,255,0.92);
+  box-shadow: 0 8px 26px rgba(110,70,220,0.12), 0 0 26px rgba(150,120,255,0.08) inset;
+}
+.profile-card[data-avatar-skin="violet"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03), transparent 25%);
+}
+
+.profile-card[data-avatar-skin="sun"] .avatar-wrap {
+  border-color: rgba(255,210,110,0.95);
+  box-shadow: 0 6px 20px rgba(240,180,60,0.14), 0 0 28px rgba(255,200,100,0.08) inset;
+}
+.profile-card[data-avatar-skin="sun"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from 180deg at 50% 50%, rgba(255,240,180,0.06), transparent 30%);
+}
+
+.profile-card[data-avatar-skin="sea"] .avatar-wrap {
+  border-color: rgba(80,200,220,0.9);
+  box-shadow: 0 8px 24px rgba(40,160,180,0.12), 0 0 20px rgba(80,200,220,0.06) inset;
+}
+.profile-card[data-avatar-skin="sea"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 3px, transparent 3px 12px);
+}
+
+.profile-card[data-avatar-skin="rose"] .avatar-wrap {
+  border-color: rgba(255,140,170,0.9);
+  box-shadow: 0 6px 20px rgba(220,90,140,0.12), 0 0 20px rgba(255,160,190,0.06) inset;
+}
+.profile-card[data-avatar-skin="rose"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 10% 10%, rgba(255,200,220,0.04), transparent 18%);
+}
+
+.profile-card[data-avatar-skin="onyx"] .avatar-wrap {
+  border-color: rgba(90,100,120,0.98);
+  box-shadow: 0 10px 30px rgba(10,10,20,0.22), 0 0 18px rgba(255,255,255,0.02) inset;
+}
+.profile-card[data-avatar-skin="onyx"] .avatar-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 20%);
+}
+
+/* SVG decorative overlays: full-bleed transparent centers so photo stays visible */
+.profile-card .avatar-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  mix-blend-mode: normal;
+  opacity: 1;
+}
+
+/* Dawn: golden fence (heavenly picket) */
+.profile-card[data-avatar-skin="dawn"] .avatar-wrap::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><g fill='none'><circle cx='120' cy='120' r='112' stroke='%23ffd46f' stroke-width='6'/><path d='M26 150h188' stroke='%23ffd46f' stroke-width='8' stroke-linecap='round'/><g stroke='%23ffd46f' stroke-width='5' stroke-linecap='round'><path d='M38 148V94l14-16 14 16v54' /><path d='M66 148V78l14-20 14 20v70' /><path d='M94 148V66l14-26 14 26v82' /><path d='M122 148V58l14-22 14 22v90' /><path d='M150 148V66l14-26 14 26v82' /><path d='M178 148V78l14-20 14 20v70' /></g><path d='M40 104c20-28 46-42 80-42s60 14 80 42' stroke='%23fff2bf' stroke-width='5' opacity='0.35'/></g></svg>");
+}
+
+/* Mint: playful hat brim (inspired accessory) */
+.profile-card[data-avatar-skin="mint"] .avatar-wrap::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><g fill='none'><circle cx='120' cy='120' r='112' stroke='%2388e5c7' stroke-width='6'/><path d='M46 136c0-32 24-54 40-54 10-28 28-44 34-44 6 0 24 16 34 44 16 0 40 22 40 54-30-20-56-28-74-28s-44 8-74 28z' fill='%23ffffff' fill-opacity='0.05' stroke='%2388e5c7' stroke-width='7' stroke-linejoin='round'/><path d='M80 86c11-12 28-18 40-18s29 6 40 18' stroke='%23d6fff0' stroke-width='5' stroke-linecap='round' opacity='0.6'/><path d='M68 136c19-10 37-14 52-14s33 4 52 14' stroke='%2388e5c7' stroke-width='5' stroke-linecap='round'/></g></svg>");
+}
+
+/* Ember: flame spikes */
+.profile-card[data-avatar-skin="ember"] .avatar-wrap::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><g fill='none'><circle cx='120' cy='120' r='112' stroke='%23ff8a65' stroke-width='6'/><path d='M56 94c14-26 34-40 64-40s50 14 64 40c8 16 10 32 10 46 0 18-6 34-18 48-10-24-24-36-40-42v-14c0-10-7-18-16-18s-16 8-16 18v14c-16 6-30 18-40 42-12-14-18-30-18-48 0-14 2-30 10-46z' fill='%23ff7f6e' fill-opacity='0.18' stroke='%23ff8a65' stroke-width='7' stroke-linejoin='round'/><path d='M84 96c10-18 22-26 36-26s26 8 36 26' stroke='%23ffd0bf' stroke-width='5' stroke-linecap='round' opacity='0.8'/><path d='M92 128c8-8 18-12 28-12s20 4 28 12' stroke='%23ffd0bf' stroke-width='4' stroke-linecap='round' opacity='0.6'/></g></svg>");
+}
+
+/* Violet: seraphic ribbons and small star glints */
+.profile-card[data-avatar-skin="violet"] .avatar-wrap::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><g fill='none'><circle cx='120' cy='120' r='112' stroke='%23c9a8ff' stroke-width='6'/><circle cx='120' cy='78' r='34' stroke='%23f4ebff' stroke-width='5' fill='none' opacity='0.85'/><path d='M52 134c18-22 38-34 68-34s50 12 68 34' stroke='%23c9a8ff' stroke-width='7' stroke-linecap='round' fill='none'/><path d='M68 134l-16 34M84 134l-8 42M156 134l8 42M172 134l16 34' stroke='%23c9a8ff' stroke-width='5' stroke-linecap='round'/><path d='M48 120c30-12 42-14 72-14s42 2 72 14' stroke='%23ffffff' stroke-opacity='0.08' stroke-width='4' stroke-linecap='round'/></g></svg>");
+}
+
+/* Sun: radiant rays */
+.profile-card[data-avatar-skin="sun"] .avatar-wrap::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><g fill='none'><circle cx='120' cy='120' r='112' stroke='%23ffd36b' stroke-width='6'/><circle cx='120' cy='120' r='42' stroke='%23ffd36b' stroke-width='8' fill='none'/><g stroke='%23ffd36b' stroke-width='5' stroke-linecap='round' opacity='0.98'><path d='M120 18v24M120 198v24M18 120h24M198 120h24M40 40l17 17M183 183l17 17M40 200l17-17M183 57l17-17' /></g><circle cx='120' cy='120' r='68' stroke='%23fff2bf' stroke-width='3' fill='none' opacity='0.55'/></g></svg>");
+}
+
+/* Sea: shell/rope accent */
+.profile-card[data-avatar-skin="sea"] .avatar-wrap::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><g fill='none'><circle cx='120' cy='120' r='112' stroke='%2388e5ff' stroke-width='6'/><path d='M56 146c10-35 28-57 64-57s54 18 64 57c-10-10-22-15-32-18-9 18-19 30-32 36-13-6-23-18-32-36-10 3-22 8-32 18z' fill='%235bc6b9' fill-opacity='0.2' stroke='%2388e5ff' stroke-width='6' stroke-linejoin='round'/><path d='M84 98c10-10 22-16 36-16s26 6 36 16' stroke='%23d9ffff' stroke-width='5' stroke-linecap='round' opacity='0.65'/><path d='M68 152c18-4 34-6 52-6s34 2 52 6' stroke='%2388e5ff' stroke-width='5' stroke-linecap='round' opacity='0.9'/></g></svg>");
+}
+
+/* Rose: thorn/garland */
+.profile-card[data-avatar-skin="rose"] .avatar-wrap::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><g fill='none'><circle cx='120' cy='120' r='112' stroke='%23ff9fb6' stroke-width='6'/><path d='M56 74c18-16 34-24 64-24s46 8 64 24c0 0-7 18-15 28-12 14-30 22-49 22s-37-8-49-22C63 92 56 74 56 74z' fill='%23ff8aa5' fill-opacity='0.18' stroke='%23ff9fb6' stroke-width='6' stroke-linejoin='round'/><path d='M74 70l-10-12M98 58l-4-14M142 58l4-14M166 70l10-12' stroke='%23ff7fa0' stroke-width='4' stroke-linecap='round'/><path d='M72 130c16-8 32-12 48-12s32 4 48 12' stroke='%23ffd3df' stroke-width='4' stroke-linecap='round' opacity='0.5'/></g></svg>");
+}
+
+/* Onyx: dark crest, helmet suggestion (abstract) */
+.profile-card[data-avatar-skin="onyx"] .avatar-wrap::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><g fill='none'><circle cx='120' cy='120' r='112' stroke='%232f3447' stroke-width='6'/><path d='M56 92c10-24 27-44 40-44 8 0 16 6 24 16 8-10 16-16 24-16 13 0 30 20 40 44-8 2-14 8-18 16-6 12-12 22-20 30-8 7-16 10-26 10s-18-3-26-10c-8-8-14-18-20-30-4-8-10-14-18-16z' fill='%232f3447' fill-opacity='0.36' stroke='%23616a82' stroke-width='6' stroke-linejoin='round'/><path d='M92 126c10-8 20-12 28-12s18 4 28 12' stroke='%23cbd4e5' stroke-width='4' stroke-linecap='round' opacity='0.7'/><path d='M68 160c16 6 36 8 52 8s36-2 52-8' stroke='%232f3447' stroke-width='5' stroke-linecap='round' opacity='0.85'/></g></svg>");
+}
+
 .profile-display-name {
   margin: 0;
   font-size: clamp(1.2rem, 5vw, 1.6rem);
@@ -1924,6 +2083,14 @@ body.modal-open {
 
 .modal.open {
   display: flex;
+}
+
+#profile-frame-preview-modal {
+  z-index: 60;
+}
+
+#profile-frame-preview-modal .modal-card {
+  width: min(520px, 100%);
 }
 
 .modal-card {

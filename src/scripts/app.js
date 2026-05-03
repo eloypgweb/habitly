@@ -37,14 +37,14 @@ const THEME_LABELS = {
   heaven: "Heaven",
 };
 const AVATAR_PRESETS = [
-  { key: "dawn", label: "Aurora", grad1: "#ffd89b", grad2: "#7ec8ff", fg: "#17324f" },
-  { key: "mint", label: "Menta", grad1: "#9de7c2", grad2: "#72c8ff", fg: "#103247" },
-  { key: "ember", label: "Ascua", grad1: "#ffb27d", grad2: "#ff7f6e", fg: "#412018" },
-  { key: "violet", label: "Violeta", grad1: "#c9a8ff", grad2: "#7fb1ff", fg: "#1f1e4d" },
-  { key: "sun", label: "Sol", grad1: "#ffe082", grad2: "#f7c76b", fg: "#3b2a12" },
-  { key: "sea", label: "Mar", grad1: "#88e5ff", grad2: "#5bc6b9", fg: "#08343a" },
-  { key: "rose", label: "Rosa", grad1: "#ffb3c7", grad2: "#ff8aa5", fg: "#4d1e2b" },
-  { key: "onyx", label: "Onyx", grad1: "#6d7288", grad2: "#2f3447", fg: "#f2f7ff" },
+  { key: "dawn", label: "Valla celestial", grad1: "#ffd89b", grad2: "#7ec8ff", fg: "#17324f" },
+  { key: "mint", label: "Gorro de Finn", grad1: "#9de7c2", grad2: "#72c8ff", fg: "#103247" },
+  { key: "ember", label: "Casco nocturno", grad1: "#ffb27d", grad2: "#ff7f6e", fg: "#412018" },
+  { key: "violet", label: "Serafín", grad1: "#c9a8ff", grad2: "#7fb1ff", fg: "#1f1e4d" },
+  { key: "sun", label: "Halo solar", grad1: "#ffe082", grad2: "#f7c76b", fg: "#3b2a12" },
+  { key: "sea", label: "Ola marina", grad1: "#88e5ff", grad2: "#5bc6b9", fg: "#08343a" },
+  { key: "rose", label: "Corona rosa", grad1: "#ffb3c7", grad2: "#ff8aa5", fg: "#4d1e2b" },
+  { key: "onyx", label: "Caballero umbrío", grad1: "#6d7288", grad2: "#2f3447", fg: "#f2f7ff" },
 ];
 const BATTLE_PASS_REWARDS = [
   {
@@ -301,6 +301,10 @@ const refs = {
   profileBattlePassModalXp: document.getElementById("profile-battle-pass-modal-xp"),
   profileBattlePassModalProgress: document.getElementById("profile-battle-pass-modal-progress"),
   profileBattlePassModalList: document.getElementById("profile-battle-pass-modal-list"),
+  profileFramePreviewModal: document.getElementById("profile-frame-preview-modal"),
+  profileFramePreviewCard: document.getElementById("profile-frame-preview-card"),
+  profileFramePreviewImg: document.getElementById("profile-frame-preview-img"),
+  profileFramePreviewFallback: document.getElementById("profile-frame-preview-fallback"),
   profileMotesCount: document.getElementById("profile-motes-count"),
   profileMotesModal: document.getElementById("profile-motes-modal"),
   profileMotesModalList: document.getElementById("profile-motes-modal-list"),
@@ -765,6 +769,51 @@ function setAvatarModalOpen(open) {
   setModalState(refs.profileAvatarModal, open);
 }
 
+function setFramePreviewModalOpen(open) {
+  setModalState(refs.profileFramePreviewModal, open);
+}
+
+function openFramePreviewModal(skinKey) {
+  if (!refs.profileFramePreviewCard) return;
+  const key = skinKey || state.profile?.avatarSkin || "classic";
+  refs.profileFramePreviewCard.dataset.avatarSkin = key;
+
+  // show user photo if exists
+  const photo = state.profile?.avatarDataUrl || "";
+  if (photo) {
+    if (refs.profileFramePreviewImg) {
+      refs.profileFramePreviewImg.src = photo;
+      refs.profileFramePreviewImg.hidden = false;
+    }
+    if (refs.profileFramePreviewFallback) refs.profileFramePreviewFallback.hidden = true;
+  } else {
+    if (refs.profileFramePreviewImg) refs.profileFramePreviewImg.hidden = true;
+    if (refs.profileFramePreviewFallback) {
+      refs.profileFramePreviewFallback.hidden = false;
+      refs.profileFramePreviewFallback.dataset.avatarSkin = key;
+      refs.profileFramePreviewFallback.textContent = getInitialForAvatar(state.profile?.name || "");
+    }
+  }
+
+  setFramePreviewModalOpen(true);
+}
+
+// Preview handling for decorative frames (temporary, non-persistent)
+let _currentPreviewFrame = null;
+function previewFrame(skinKey) {
+  if (!skinKey) return;
+  _currentPreviewFrame = skinKey;
+  if (refs.profileCard) refs.profileCard.dataset.avatarSkin = skinKey;
+  if (refs.profileAvatarFallback) refs.profileAvatarFallback.dataset.avatarSkin = skinKey;
+}
+
+function clearFramePreview() {
+  _currentPreviewFrame = null;
+  const avatarSkin = state.profile?.avatarSkin || "classic";
+  if (refs.profileCard) refs.profileCard.dataset.avatarSkin = avatarSkin;
+  if (refs.profileAvatarFallback) refs.profileAvatarFallback.dataset.avatarSkin = avatarSkin;
+}
+
 function getInitialForAvatar(nameValue) {
   const cleanName = String(nameValue ?? "").trim();
   return cleanName ? cleanName[0].toUpperCase() : "?";
@@ -792,13 +841,22 @@ function buildAvatarPresetDataUrl(presetKey, nameValue) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-function selectAvatarPreset(presetKey) {
-  const avatarDataUrl = buildAvatarPresetDataUrl(presetKey, state.profile?.name || "");
-  if (!avatarDataUrl) {
+// Select a decorative frame ("marco"). This should NOT replace the user's photo.
+function selectFramePreset(presetKey) {
+  if (presetKey === "classic" || !presetKey) {
+    state.profile.avatarSkin = "classic";
+    saveAppState({ immediate: true });
+    setAvatarModalOpen(false);
+    renderProfile();
     return;
   }
 
-  state.profile.avatarDataUrl = avatarDataUrl;
+  const preset = AVATAR_PRESETS.find((item) => item.key === presetKey);
+  if (!preset) {
+    return;
+  }
+
+  state.profile.avatarSkin = presetKey;
   saveAppState({ immediate: true });
   setAvatarModalOpen(false);
   renderProfile();
@@ -873,6 +931,10 @@ function renderBattlePassModal(metrics, battlePassRewards, battlePassProgress) {
           ? `<button class="btn btn-small btn-primary" type="button" data-action="claim-battle-pass" data-reward-key="${reward.key}">Reclamar</button>`
           : `<button class="btn btn-small" type="button" disabled>Bloqueado</button>`;
 
+      const previewButton = reward.effect?.avatarSkin
+        ? `<button class="btn btn-small" type="button" data-action="preview-frame" data-frame-key="${reward.effect.avatarSkin}">Vista</button>`
+        : "";
+
       return `
         <article class="battle-pass-node ${reward.claimed ? "claimed" : reward.unlocked ? "unlocked" : "locked"}" style="--reward-position:${rewardPosition}%">
           <p class="battle-pass-node-xp">${reward.minXp} XP</p>
@@ -881,7 +943,7 @@ function renderBattlePassModal(metrics, battlePassRewards, battlePassProgress) {
             <p class="battle-pass-node-detail">${reward.detail}</p>
             <div class="battle-pass-node-footer">
               <span class="battle-pass-node-state">${stateLabel}</span>
-              ${actionButton}
+              <div class="battle-pass-node-actions">${previewButton}${actionButton}</div>
             </div>
           </div>
         </article>
@@ -2303,8 +2365,23 @@ function handleClick(event) {
     return;
   }
 
-  if (action === "select-avatar-preset") {
-    selectAvatarPreset(trigger.dataset.avatarPreset || "");
+  if (action === "select-frame-preset") {
+    selectFramePreset(trigger.dataset.avatarPreset || "");
+    return;
+  }
+
+  if (action === "preview-frame") {
+    openFramePreviewModal(trigger.dataset.frameKey || "");
+    return;
+  }
+
+  if (action === "close-frame-preview-modal") {
+    setFramePreviewModalOpen(false);
+    return;
+  }
+
+  if (action === "clear-frame-preview") {
+    clearFramePreview();
     return;
   }
 
@@ -2321,6 +2398,36 @@ function handleClick(event) {
 
 function bindEvents() {
   document.addEventListener("click", handleClick);
+
+  // Hover preview for frame presets in the avatar/frame modal
+  document.addEventListener("mouseover", (e) => {
+    const btn = e.target.closest && e.target.closest(".avatar-preset-btn");
+    if (btn) {
+      const preset = btn.dataset?.avatarPreset || "";
+      if (preset) previewFrame(preset);
+    }
+  });
+
+  document.addEventListener("mouseout", (e) => {
+    const btn = e.target.closest && e.target.closest(".avatar-preset-btn");
+    if (btn) {
+      clearFramePreview();
+    }
+  });
+
+  // Capture preview-frame clicks early to prevent the global handler from triggering claim actions.
+  document.addEventListener(
+    "click",
+    (e) => {
+      const btn = e.target.closest && e.target.closest('button[data-action="preview-frame"]');
+      if (!btn) return;
+      const key = btn.dataset.frameKey || "";
+      if (key) openFramePreviewModal(key);
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    true,
+  );
 
   refs.openGoalForm.addEventListener("click", () => {
     prefillGoalForm(null);
@@ -2514,6 +2621,7 @@ function moveProfileModalsToBody() {
     refs.profileMotesModal,
     refs.profileThemesModal,
     refs.profileAvatarModal,
+    refs.profileFramePreviewModal,
     refs.profileNameModal,
   ].filter(Boolean);
 

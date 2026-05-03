@@ -20,7 +20,7 @@
         <div class="profile-actions">
           <input id="profile-photo-input" type="file" accept="image/*" hidden />
           <button class="btn" id="choose-photo-btn" type="button">Elegir foto</button>
-          <button class="btn" id="open-avatar-modal-btn" type="button">Elegir avatar</button>
+          <button class="btn" id="open-avatar-modal-btn" type="button">Elegir marco</button>
           <button class="btn btn-primary" id="open-name-modal-btn" type="button">Cambiar nombre</button>
           <button class="btn btn-danger" id="logout-btn" type="button">Cerrar sesion</button>
         </div>
@@ -209,6 +209,26 @@
       </div>
     </div>
 
+    <div id="profile-frame-preview-modal" class="modal" aria-hidden="true">
+      <div class="modal-card preview-modal-card">
+        <header class="modal-header">
+          <h3>Vista del marco</h3>
+          <button class="icon-btn" type="button" data-action="close-frame-preview-modal" aria-label="Cerrar">X</button>
+        </header>
+        <div class="preview-modal-body">
+          <article id="profile-frame-preview-card" class="profile-card preview-card" data-avatar-skin="">
+            <div class="avatar-wrap">
+              <img id="profile-frame-preview-img" alt="Preview avatar" hidden />
+              <div id="profile-frame-preview-fallback" class="avatar-fallback">?</div>
+            </div>
+            <div class="preview-caption">
+              <p class="muted">Así se vería tu foto con el marco seleccionado.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+
     <div id="profile-motes-modal" class="modal" aria-hidden="true">
       <div class="modal-card cosmetics-modal-card">
         <header class="modal-header">
@@ -259,19 +279,20 @@
     <div id="profile-avatar-modal" class="modal" aria-hidden="true">
       <div class="modal-card cosmetics-modal-card">
         <header class="modal-header">
-          <h3>Elige avatar</h3>
+          <h3>Elige marco</h3>
           <button class="icon-btn" type="button" data-action="close-avatar-modal" aria-label="Cerrar">X</button>
         </header>
-        <p class="modal-copy">Selecciona un preset rapido para el perfil.</p>
+        <p class="modal-copy">Selecciona un marco decorativo para tu foto de perfil.</p>
         <div class="avatar-picker-grid">
-          <button class="avatar-preset-btn" type="button" data-action="select-avatar-preset" data-avatar-preset="dawn"><span class="avatar-preset-dot dawn">A</span><span>Aurora</span></button>
-          <button class="avatar-preset-btn" type="button" data-action="select-avatar-preset" data-avatar-preset="mint"><span class="avatar-preset-dot mint">M</span><span>Menta</span></button>
-          <button class="avatar-preset-btn" type="button" data-action="select-avatar-preset" data-avatar-preset="ember"><span class="avatar-preset-dot ember">E</span><span>Ascua</span></button>
-          <button class="avatar-preset-btn" type="button" data-action="select-avatar-preset" data-avatar-preset="violet"><span class="avatar-preset-dot violet">V</span><span>Violeta</span></button>
-          <button class="avatar-preset-btn" type="button" data-action="select-avatar-preset" data-avatar-preset="sun"><span class="avatar-preset-dot sun">S</span><span>Sol</span></button>
-          <button class="avatar-preset-btn" type="button" data-action="select-avatar-preset" data-avatar-preset="sea"><span class="avatar-preset-dot sea">M</span><span>Mar</span></button>
-          <button class="avatar-preset-btn" type="button" data-action="select-avatar-preset" data-avatar-preset="rose"><span class="avatar-preset-dot rose">R</span><span>Rosa</span></button>
-          <button class="avatar-preset-btn" type="button" data-action="select-avatar-preset" data-avatar-preset="onyx"><span class="avatar-preset-dot onyx">O</span><span>Onyx</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="classic"><span class="avatar-preset-dot onyx">0</span><span>Sin marco</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="dawn"><span class="avatar-preset-dot dawn">V</span><span>Valla celestial</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="mint"><span class="avatar-preset-dot mint">F</span><span>Gorro de Finn</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="ember"><span class="avatar-preset-dot ember">B</span><span>Casco nocturno</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="violet"><span class="avatar-preset-dot violet">S</span><span>Serafín</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="sun"><span class="avatar-preset-dot sun">H</span><span>Halo solar</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="sea"><span class="avatar-preset-dot sea">O</span><span>Ola marina</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="rose"><span class="avatar-preset-dot rose">C</span><span>Corona rosa</span></button>
+          <button class="avatar-preset-btn" type="button" data-action="select-frame-preset" data-avatar-preset="onyx"><span class="avatar-preset-dot onyx">U</span><span>Caballero umbrío</span></button>
         </div>
       </div>
     </div>
