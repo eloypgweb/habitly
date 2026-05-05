@@ -657,6 +657,125 @@ body.modal-open {
   font-size: 16px;
 }
 
+.task-form select,
+.task-form input[type="number"] {
+  min-height: 42px;
+}
+
+.filter-wrap select,
+.task-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border-radius: 14px;
+  padding-right: 40px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, color-mix(in srgb, var(--text) 78%, transparent) 50%),
+    linear-gradient(135deg, color-mix(in srgb, var(--text) 78%, transparent) 50%, transparent 50%),
+    linear-gradient(180deg, color-mix(in srgb, var(--input-bg) 88%, var(--surface)), color-mix(in srgb, var(--input-bg) 72%, var(--surface)));
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px),
+    0 0;
+  background-size: 6px 6px, 6px 6px, 100% 100%;
+  background-repeat: no-repeat;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.filter-wrap select:hover,
+.task-form select:hover {
+  border-color: color-mix(in srgb, var(--brand) 42%, var(--input-border));
+}
+
+.filter-wrap select:focus,
+.task-form select:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--brand) 62%, var(--input-border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 18%, transparent);
+}
+
+.filter-wrap select::-ms-expand,
+.task-form select::-ms-expand {
+  display: none;
+}
+
+.filter-wrap select option,
+.task-form select option,
+.filter-wrap select optgroup,
+.task-form select optgroup {
+  background: color-mix(in srgb, var(--surface) 88%, black);
+  color: var(--text);
+  padding: 10px 12px;
+}
+
+.filter-wrap select option:checked,
+.task-form select option:checked {
+  background: color-mix(in srgb, var(--brand) 30%, var(--surface));
+  color: var(--text);
+}
+
+.task-form input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.task-form input[type="number"]::-webkit-outer-spin-button,
+.task-form input[type="number"]::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.repeat-days-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.repeat-days-field {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.79rem;
+}
+
+.repeat-day-btn {
+  margin-top: 0;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  padding: 8px 10px;
+  min-height: 38px;
+  background: linear-gradient(180deg, var(--chip-bg), color-mix(in srgb, var(--chip-bg) 70%, var(--surface)));
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  width: fit-content;
+  min-width: 0;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.repeat-day-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--input-border));
+}
+
+.repeat-day-btn.active {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 38%, var(--chip-bg)), color-mix(in srgb, var(--brand) 24%, var(--chip-bg)));
+  border-color: color-mix(in srgb, var(--brand) 80%, var(--input-border));
+  color: var(--text);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+}
+
+.repeat-day-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 65%, transparent);
+  outline-offset: 2px;
+}
+
 .section-header {
   display: flex;
   align-items: center;
@@ -2098,7 +2217,7 @@ body.modal-open {
   max-height: calc(100dvh - 24px);
   border-radius: 17px 17px 10px 10px;
   border: 1px solid var(--border);
-  padding: 12px;
+  padding: 18px;
   background: var(--modal-bg);
   box-shadow: var(--shadow);
   display: flex;
@@ -2111,6 +2230,32 @@ body.modal-open {
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 2px;
+}
+
+.modal-card > .task-form {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--input-border) 85%, var(--chip-bg)) transparent;
+}
+
+.modal-card > .task-form::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal-card > .task-form::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-card > .task-form::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--input-border) 85%, var(--chip-bg));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.modal-card > .task-form::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--brand) 45%, var(--input-border));
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .modal-header {
@@ -2127,7 +2272,7 @@ body.modal-open {
 
 .task-form {
   display: grid;
-  gap: 10px;
+  gap: 14px;
 }
 
 .form-grid,
@@ -2136,6 +2281,11 @@ body.modal-open {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.modal-actions {
+  margin-top: 8px;
+  padding-top: 6px;
 }
 
 .time-inputs {

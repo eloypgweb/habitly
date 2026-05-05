@@ -262,6 +262,10 @@ const refs = {
   taskPriority: document.getElementById("task-priority"),
   taskType: document.getElementById("task-type"),
   taskObjective: document.getElementById("task-objective"),
+  taskRepeat: document.getElementById("task-repeat"),
+  taskRepeatOpts: document.getElementById("task-repeat-opts"),
+  taskRepeatDays: Array.from(document.querySelectorAll("[data-repeat-day]")),
+  taskRepeatDurationWeeks: document.getElementById("task-repeat-duration-weeks"),
   profileDisplayName: document.getElementById("profile-display-name"),
   profileUsernameText: document.getElementById("profile-username-text"),
   profileEmailText: document.getElementById("profile-email-text"),
@@ -465,6 +469,39 @@ function getDayLabel(dayKey) {
 
 function daySortValue(dayKey) {
   return DAYS.findIndex((day) => day.key === dayKey);
+}
+
+function setRepeatDayButtons(selectedDays = []) {
+  if (!refs.taskRepeatDays || !refs.taskRepeatDays.length) {
+    return;
+  }
+
+  const selectedDaySet = new Set(selectedDays);
+  refs.taskRepeatDays.forEach((button) => {
+    const isActive = selectedDaySet.has(button.dataset.repeatDay);
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+}
+
+function getSelectedRepeatDays() {
+  return refs.taskRepeatDays
+    .filter((button) => button.classList.contains("active"))
+    .map((button) => button.dataset.repeatDay)
+    .filter(Boolean);
+}
+
+function getRepeatDurationWeeks() {
+  const rawValue = String(refs.taskRepeatDurationWeeks?.value ?? "1").replace(/[^0-9]/g, "");
+  return Math.max(1, Number(rawValue) || 1);
+}
+
+function setRepeatDurationWeeks(value) {
+  if (!refs.taskRepeatDurationWeeks) {
+    return;
+  }
+
+  refs.taskRepeatDurationWeeks.value = String(Math.max(1, Number(value) || 1));
 }
 
 function formatDateLabel(date) {
@@ -1517,6 +1554,11 @@ function prefillTaskForm(task = null) {
     refs.taskPriority.value = task.priority;
     refs.taskType.value = task.type;
     refs.taskObjective.value = task.objectiveId || "";
+    // Repeat fields (existing tasks currently don't store repeat metadata)
+    if (refs.taskRepeat) refs.taskRepeat.value = task.repeat || "no";
+    if (refs.taskRepeatOpts) refs.taskRepeatOpts.style.display = (refs.taskRepeat && refs.taskRepeat.value === "yes") ? "block" : "none";
+    setRepeatDurationWeeks(task.repeatDurationWeeks || 1);
+    setRepeatDayButtons(task.repeatDays || []);
   } else {
     refs.taskFormTitle.textContent = "Nueva tarea";
     refs.taskForm.reset();
@@ -1530,6 +1572,10 @@ function prefillTaskForm(task = null) {
     refs.taskPriority.value = "medium";
     refs.taskType.value = "";
     refs.taskObjective.value = "";
+    if (refs.taskRepeat) refs.taskRepeat.value = "no";
+    if (refs.taskRepeatOpts) refs.taskRepeatOpts.style.display = "none";
+    setRepeatDurationWeeks(1);
+    setRepeatDayButtons([]);
   }
 }
 
@@ -2147,6 +2193,32 @@ function handleTaskSubmit(event) {
   if (index >= 0) {
     state.tasks[index] = taskPayload;
   } else {
+    const repeat = refs.taskRepeat ? refs.taskRepeat.value : "no";
+    if (repeat === "yes") {
+      const selectedDays = getSelectedRepeatDays();
+      const durationWeeks = getRepeatDurationWeeks();
+      if (selectedDays.length) {
+        const start = parseDateString(date);
+        const end = addDays(start, durationWeeks * 7 - 1);
+        for (let d = new Date(start); d <= end; d = addDays(d, 1)) {
+          const dStr = getDateString(d);
+          const dayKey = getDayOfWeek(dStr);
+          if (selectedDays.includes(dayKey) && dStr >= date) {
+            const occ = {
+              ...taskPayload,
+              id: createUid(),
+              date: dStr,
+            };
+            state.tasks.push(occ);
+          }
+        }
+        saveAppState();
+        setModalOpen(false);
+        renderAll();
+        return;
+      }
+    }
+
     state.tasks.push(taskPayload);
   }
 
@@ -2452,6 +2524,26 @@ function bindEvents() {
     const isIndefinido = refs.taskEndHour.value === "";
     refs.taskEndMinute.style.display = isIndefinido ? "none" : "block";
     document.getElementById("end-time-sep").style.display = isIndefinido ? "none" : "block";
+  });
+
+  if (refs.taskRepeat) {
+    refs.taskRepeat.addEventListener("change", () => {
+      const isEnabled = refs.taskRepeat.value === "yes";
+      if (refs.taskRepeatOpts) refs.taskRepeatOpts.style.display = isEnabled ? "block" : "none";
+    });
+  }
+
+  refs.taskRepeatDurationWeeks?.addEventListener("input", () => {
+    const cleanedValue = String(refs.taskRepeatDurationWeeks.value).replace(/[^0-9]/g, "");
+    refs.taskRepeatDurationWeeks.value = cleanedValue;
+  });
+
+  refs.taskRepeatDays.forEach((button) => {
+    button.addEventListener("click", () => {
+      const isActive = button.classList.contains("active");
+      button.classList.toggle("active", !isActive);
+      button.setAttribute("aria-pressed", String(!isActive));
+    });
   });
 
   refs.taskModal.addEventListener("click", (event) => {

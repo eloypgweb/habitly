@@ -76,6 +76,34 @@
         <select id="task-objective"></select>
       </label>
 
+      <label>
+        <span>Repetir</span>
+        <select id="task-repeat">
+          <option value="no" selected>No</option>
+          <option value="yes">Sí</option>
+        </select>
+      </label>
+
+      <div id="task-repeat-opts" style="display:none;">
+        <div class="repeat-days-field">
+          <span>Días</span>
+          <div class="repeat-days-grid" role="group" aria-label="Selecciona los dias de repeticion">
+            <button class="repeat-day-btn" type="button" data-repeat-day="monday" aria-pressed="false">Lunes</button>
+            <button class="repeat-day-btn" type="button" data-repeat-day="tuesday" aria-pressed="false">Martes</button>
+            <button class="repeat-day-btn" type="button" data-repeat-day="wednesday" aria-pressed="false">Miercoles</button>
+            <button class="repeat-day-btn" type="button" data-repeat-day="thursday" aria-pressed="false">Jueves</button>
+            <button class="repeat-day-btn" type="button" data-repeat-day="friday" aria-pressed="false">Viernes</button>
+            <button class="repeat-day-btn" type="button" data-repeat-day="saturday" aria-pressed="false">Sabado</button>
+            <button class="repeat-day-btn" type="button" data-repeat-day="sunday" aria-pressed="false">Domingo</button>
+          </div>
+        </div>
+
+        <label>
+          <span>Duración (semanas)</span>
+          <input id="task-repeat-duration-weeks" type="text" inputmode="numeric" pattern="[0-9]*" value="1" />
+        </label>
+      </div>
+
       <footer class="modal-actions">
         <button id="cancel-task-form" class="btn" type="button">Cancelar</button>
         <button class="btn btn-primary" type="submit">Guardar</button>
