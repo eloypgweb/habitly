@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap");
+
 :root {
   --bg: #0a0f16;
   --surface: #101824;
@@ -68,6 +70,7 @@
   --sync-error-text: #ffdede;
   --sync-error-border: rgba(255, 110, 110, 0.5);
   --sync-error-bg: rgba(255, 110, 110, 0.16);
+  --app-font-family: "Sora", "Segoe UI", sans-serif;
 }
 
 * {
@@ -82,7 +85,7 @@ body {
 
 body {
   min-height: 100vh;
-  font-family: "Sora", "Segoe UI", sans-serif;
+  font-family: var(--app-font-family);
   color: var(--text);
   background:
     radial-gradient(circle at 10% 0%, rgba(115, 175, 255, 0.2), transparent 28%),
@@ -800,6 +803,68 @@ body.modal-open {
   gap: 8px;
 }
 
+.week-export-menu {
+  position: relative;
+}
+
+.week-export-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.week-export-caret {
+  margin-left: 2px;
+  transition: transform 160ms ease;
+}
+
+.week-export-menu.open .week-export-caret {
+  transform: rotate(180deg);
+}
+
+.week-export-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--input-border);
+  border-radius: 14px;
+  background: var(--panel-bg);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+  z-index: 15;
+}
+
+.week-export-menu.open .week-export-popover {
+  display: flex;
+}
+
+.week-export-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-radius: 11px;
+  padding: 10px 11px;
+  color: var(--text);
+  background: var(--btn-bg);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.week-export-option:hover,
+.week-export-option:focus-visible,
+.week-export-trigger:hover,
+.week-export-trigger:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+}
+
 .muted-pill {
   color: var(--muted);
   font-size: 0.74rem;
@@ -1425,6 +1490,105 @@ body.modal-open {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.settings-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 14px;
+}
+
+.settings-launch-btn svg {
+  flex: 0 0 auto;
+  display: block;
+}
+
+.settings-modal-card {
+  width: min(720px, 100%);
+}
+
+.settings-modal-grid {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.setting-card {
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--card-bg);
+}
+
+.setting-card-muted {
+  opacity: 0.92;
+}
+
+.setting-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.setting-preview {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.setting-field {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.79rem;
+}
+
+.setting-field select {
+  width: 100%;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 16px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border-radius: 14px;
+  padding-right: 40px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, color-mix(in srgb, var(--text) 78%, transparent) 50%),
+    linear-gradient(135deg, color-mix(in srgb, var(--text) 78%, transparent) 50%, transparent 50%),
+    linear-gradient(180deg, color-mix(in srgb, var(--input-bg) 88%, var(--surface)), color-mix(in srgb, var(--input-bg) 72%, var(--surface)));
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px),
+    0 0;
+  background-size: 6px 6px, 6px 6px, 100% 100%;
+  background-repeat: no-repeat;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.setting-field select:hover,
+.setting-field select:focus-visible {
+  border-color: color-mix(in srgb, var(--brand) 42%, var(--input-border));
+  outline: none;
+}
+
+.setting-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.setting-card .btn {
+  margin-top: 12px;
 }
 
 .profile-summary {

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap");
+
 :root {
   --auth-bg-1: #0a0f16;
   --auth-bg-2: #0f1722;
@@ -8,6 +10,7 @@
   --auth-accent: #7bc8ff;
   --auth-accent-2: #8ee5b8;
   --auth-danger: #ff8c8c;
+  --auth-font-family: "Sora", "Segoe UI", sans-serif;
 }
 
 * {
@@ -23,7 +26,7 @@ body {
 .auth-body {
   min-height: 100vh;
   color: var(--auth-text);
-  font-family: "Sora", "Segoe UI", sans-serif;
+  font-family: var(--auth-font-family);
   background:
     radial-gradient(circle at 20% 10%, rgba(123, 200, 255, 0.22), transparent 30%),
     radial-gradient(circle at 80% 0%, rgba(142, 229, 184, 0.2), transparent 26%),

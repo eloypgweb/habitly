@@ -11,6 +11,7 @@ const DEFAULT_STATE = {
     name: "",
     avatarDataUrl: "",
     theme: "ocean",
+    fontFamily: "sora",
     battlePassClaimedRewards: [],
     equippedMoteKey: "",
     mote: "",
@@ -111,6 +112,7 @@ function normalizeState(parsed = {}) {
       name: String(parsed.profile?.name ?? DEFAULT_STATE.profile.name),
       avatarDataUrl: String(parsed.profile?.avatarDataUrl ?? DEFAULT_STATE.profile.avatarDataUrl),
       theme: String(parsed.profile?.theme ?? DEFAULT_STATE.profile.theme),
+      fontFamily: String(parsed.profile?.fontFamily ?? DEFAULT_STATE.profile.fontFamily),
       battlePassClaimedRewards: Array.isArray(parsed.profile?.battlePassClaimedRewards)
         ? parsed.profile.battlePassClaimedRewards.map(String)
         : structuredClone(DEFAULT_STATE.profile.battlePassClaimedRewards),

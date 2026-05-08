@@ -36,6 +36,12 @@ const THEME_LABELS = {
   hell: "Hell",
   heaven: "Heaven",
 };
+const FONT_FAMILIES = {
+  sora: { label: "Sora", stack: '"Sora", "Segoe UI", sans-serif' },
+  manrope: { label: "Manrope", stack: '"Manrope", "Segoe UI", sans-serif' },
+  "plus-jakarta-sans": { label: "Plus Jakarta Sans", stack: '"Plus Jakarta Sans", "Segoe UI", sans-serif' },
+  inter: { label: "Inter", stack: '"Inter", "Segoe UI", sans-serif' },
+};
 const AVATAR_PRESETS = [
   { key: "dawn", label: "Valla celestial", grad1: "#ffd89b", grad2: "#7ec8ff", fg: "#17324f" },
   { key: "mint", label: "Gorro de Finn", grad1: "#9de7c2", grad2: "#72c8ff", fg: "#103247" },
@@ -274,9 +280,12 @@ const refs = {
   profileAvatar: document.getElementById("profile-avatar"),
   profileAvatarFallback: document.getElementById("profile-avatar-fallback"),
   profilePhotoInput: document.getElementById("profile-photo-input"),
+  profileFontSelect: document.getElementById("profile-font-select"),
   choosePhotoBtn: document.getElementById("choose-photo-btn"),
   openAvatarModalBtn: document.getElementById("open-avatar-modal-btn"),
+  openSettingsModalBtn: document.getElementById("open-settings-modal-btn"),
   profileAvatarModal: document.getElementById("profile-avatar-modal"),
+  profileSettingsModal: document.getElementById("profile-settings-modal"),
   openNameModalBtn: document.getElementById("open-name-modal-btn"),
   profileNameModal: document.getElementById("profile-name-modal"),
   closeNameModal: document.getElementById("close-name-modal"),
@@ -325,6 +334,7 @@ const refs = {
   profileAnalyticsTopType: document.getElementById("profile-analytics-top-type"),
   profileHeatmapGrid: document.getElementById("profile-heatmap-grid"),
   profileFocusSuggestions: document.getElementById("profile-focus-suggestions"),
+  weekExportMenu: document.querySelector("[data-week-export-menu]"),
   themeButtons: Array.from(document.querySelectorAll("[data-action='set-theme']")),
 };
 
@@ -542,6 +552,25 @@ function getCompletionRatio(taskList) {
 
 function normalizeTheme(value) {
   return THEMES.includes(value) ? value : "ocean";
+}
+
+function normalizeFontFamily(value) {
+  return Object.prototype.hasOwnProperty.call(FONT_FAMILIES, value) ? value : "sora";
+}
+
+function getFontLabel(fontKey) {
+  return FONT_FAMILIES[fontKey]?.label ?? FONT_FAMILIES.sora.label;
+}
+
+function applyFont(fontKey) {
+  const resolvedFont = normalizeFontFamily(fontKey);
+  const fontStack = FONT_FAMILIES[resolvedFont].stack;
+  document.body.style.setProperty("--app-font-family", fontStack);
+  document.body.dataset.font = resolvedFont;
+
+  if (refs.profileFontSelect && refs.profileFontSelect.value !== resolvedFont) {
+    refs.profileFontSelect.value = resolvedFont;
+  }
 }
 
 function applyTheme(themeName) {
@@ -766,6 +795,7 @@ function updateModalScrollLock() {
     refs.confirmGoalModal,
     refs.confirmTaskModal,
     refs.profileNameModal,
+    refs.profileSettingsModal,
     refs.profileBattlePassModal,
     refs.profileMotesModal,
     refs.profileThemesModal,
@@ -804,6 +834,14 @@ function setThemesModalOpen(open) {
 
 function setAvatarModalOpen(open) {
   setModalState(refs.profileAvatarModal, open);
+}
+
+function setSettingsModalOpen(open) {
+  setModalState(refs.profileSettingsModal, open);
+
+  if (open && refs.profileFontSelect) {
+    refs.profileFontSelect.value = normalizeFontFamily(state.profile?.fontFamily || "sora");
+  }
 }
 
 function setFramePreviewModalOpen(open) {
@@ -1750,6 +1788,150 @@ function renderWeekOverview() {
   refs.weeklyOverview.innerHTML = dayColumns;
 }
 
+function formatDateShort(date) {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${day}/${month}`;
+}
+
+function getDayEmoji(index) {
+  const map = [
+    "\u{1F535}", // blue
+    "\u{1F7E2}", // green
+    "\u{1F7E1}", // yellow
+    "\u{1F7E0}", // orange
+    "\u{1F534}", // red
+    "\u{1F7E3}", // purple (sat)
+    "\u{26AA}", // white circle (sun)
+  ];
+
+  return map[index] || "\u{1F539}";
+}
+
+function generateWeeklyShareText(weekStartDate) {
+  const weekStart = new Date(weekStartDate);
+  const weekEnd = addDays(weekStart, 6);
+  const EMOJI = {
+    calendar: "\u{1F4C5}",
+    study: "\u{1F4DA}",
+    sport: "\u{1F3C0}",
+    personal: "\u{1F464}",
+    work: "\u{1F4BC}",
+    love: "\u{2764}\u{FE0F}",
+    defaultTask: "\u{1F4CB}",
+  };
+
+  let out = `${EMOJI.calendar} *PLAN SEMANAL* (del ${formatDateShort(weekStart)} al ${formatDateShort(weekEnd)})\n\n`;
+  out += `━━━━━━━━━━━━━━\n\n`;
+
+  for (let i = 0; i < 7; i += 1) {
+    const dayDate = addDays(weekStart, i);
+    const dayKey = getDayFromDate(dayDate);
+    const dayLabel = getDayLabel(dayKey).toUpperCase();
+    const dayEmoji = getDayEmoji(i);
+
+    out += `*${dayEmoji} ${dayLabel}*\n`;
+
+    const dayDateStr = getDateString(dayDate);
+    const tasks = state.tasks
+      .filter((t) => t.date === dayDateStr)
+      .sort((a, b) => a.startHour - b.startHour);
+
+    if (!tasks.length) {
+      out += `No hay tareas asignadas.\n\n`;
+      out += `━━━━━━━━━━━━━━\n\n`;
+      continue;
+    }
+
+    tasks.forEach((task) => {
+      const start = formatTime(task.startHour, task.startMinute);
+      const end = task.endHour ? formatTime(task.endHour, task.endMinute) : "Indefinido";
+      const typeKey = normalizeType(task.type || "");
+      const taskEmoji = EMOJI[typeKey] || EMOJI.defaultTask;
+      out += `${taskEmoji} ${task.title} · ${start}-${end}`;
+      if (task.type) out += ` · ${task.type}`;
+      out += `\n`;
+    });
+
+    out += `\n━━━━━━━━━━━━━━\n\n`;
+  }
+
+  return out.trim();
+}
+
+function buildWhatsAppShareUrl(text) {
+  const url = new URL("https://api.whatsapp.com/send");
+  url.searchParams.set("text", text);
+  return url.toString();
+}
+
+function showCopyToast(message = "Plan semanal copiado", duration = 1500) {
+  // Remove existing toast if present
+  const existing = document.getElementById("copy-toast-el");
+  if (existing) {
+    existing.remove();
+  }
+
+  const el = document.createElement("div");
+  el.id = "copy-toast-el";
+  el.setAttribute("role", "status");
+  el.setAttribute("aria-live", "polite");
+  el.textContent = message;
+  Object.assign(el.style, {
+    position: "fixed",
+    left: "50%",
+    bottom: "20px",
+    transform: "translateX(-50%)",
+    background: "rgba(0,0,0,0.85)",
+    color: "#fff",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    zIndex: 9999,
+    fontSize: "14px",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+    opacity: "0",
+    transition: "opacity 150ms ease-in-out",
+  });
+
+  document.body.appendChild(el);
+  // Force paint then show
+  // eslint-disable-next-line no-unused-expressions
+  el.offsetWidth;
+  el.style.opacity = "1";
+
+  setTimeout(() => {
+    el.style.opacity = "0";
+    setTimeout(() => el.remove(), 200);
+  }, duration);
+}
+
+function setWeekExportMenuOpen(open) {
+  const menu = refs.weekExportMenu;
+  if (!menu) {
+    return;
+  }
+
+  menu.classList.toggle("open", open);
+  const trigger = menu.querySelector("[data-action='toggle-week-export-menu']");
+  if (trigger) {
+    trigger.setAttribute("aria-expanded", String(open));
+  }
+}
+
+function toggleWeekExportMenu() {
+  const menu = refs.weekExportMenu;
+  if (!menu) {
+    return;
+  }
+
+  setWeekExportMenuOpen(!menu.classList.contains("open"));
+}
+
+function closeWeekExportMenu() {
+  setWeekExportMenuOpen(false);
+}
+
 function renderDayDetail() {
   if (!refs.dayDetailTitle || !refs.dayDetailMeta || !refs.dayDetailTaskList) {
     return;
@@ -1959,9 +2141,14 @@ function renderProfile() {
   const avatarSkin = state.profile?.avatarSkin || "classic";
   const requestedTheme = state.profile?.theme || "ocean";
   const resolvedTheme = isThemeUnlocked(requestedTheme, metrics, battlePassRewards) ? requestedTheme : "ocean";
+  const requestedFont = state.profile?.fontFamily || "sora";
+  const resolvedFont = normalizeFontFamily(requestedFont);
 
   if (resolvedTheme !== requestedTheme) {
     state.profile.theme = resolvedTheme;
+  }
+  if (resolvedFont !== requestedFont) {
+    state.profile.fontFamily = resolvedFont;
   }
 
   refs.profileDisplayName.textContent = name;
@@ -1969,6 +2156,9 @@ function renderProfile() {
   refs.profileEmailText.textContent = currentUserEmail;
   if (refs.profileMoteText) {
     refs.profileMoteText.textContent = activeMote;
+  }
+  if (refs.profileFontSelect) {
+    refs.profileFontSelect.value = resolvedFont;
   }
   if (refs.profileEquippedMoteName) {
     refs.profileEquippedMoteName.textContent = activeMote;
@@ -2081,6 +2271,7 @@ function renderProfile() {
   }
 
   applyTheme(resolvedTheme);
+  applyFont(resolvedFont);
 }
 
 function handleProfileNameSubmit(event) {
@@ -2310,6 +2501,10 @@ function readAvatarFile(file) {
 }
 
 function handleClick(event) {
+  if (refs.weekExportMenu && refs.weekExportMenu.classList.contains("open") && !event.target.closest("[data-week-export-menu]")) {
+    closeWeekExportMenu();
+  }
+
   const trigger = event.target.closest("[data-action]");
   if (!trigger) {
     return;
@@ -2334,6 +2529,41 @@ function handleClick(event) {
 
   if (action === "next-week") {
     shiftWeek(1);
+    return;
+  }
+
+  if (action === "toggle-week-export-menu") {
+    toggleWeekExportMenu();
+    return;
+  }
+
+  if (action === "export-week") {
+    const text = generateWeeklyShareText(getWeekCursorStart());
+    const wa = buildWhatsAppShareUrl(text);
+    window.open(wa, "_blank", "noopener,noreferrer");
+    closeWeekExportMenu();
+    return;
+  }
+
+  if (action === "copy-week") {
+    const text = generateWeeklyShareText(getWeekCursorStart());
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => showCopyToast());
+    } else {
+      // Fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showCopyToast();
+      } catch (e) {
+        alert("No se pudo copiar automáticamente. Por favor selecciona y copia manualmente.");
+      }
+      document.body.removeChild(ta);
+    }
+    closeWeekExportMenu();
     return;
   }
 
@@ -2414,6 +2644,16 @@ function handleClick(event) {
 
   if (action === "open-avatar-modal") {
     setAvatarModalOpen(true);
+    return;
+  }
+
+  if (action === "open-settings-modal") {
+    setSettingsModalOpen(true);
+    return;
+  }
+
+  if (action === "close-settings-modal") {
+    setSettingsModalOpen(false);
     return;
   }
 
@@ -2621,6 +2861,14 @@ function bindEvents() {
     refs.profilePhotoInput.click();
   });
 
+  refs.profileFontSelect?.addEventListener("change", (event) => {
+    const nextFont = normalizeFontFamily(event.target.value);
+    state.profile.fontFamily = nextFont;
+    applyFont(nextFont);
+    saveAppState();
+    renderProfile();
+  });
+
   refs.profilePhotoInput.addEventListener("change", (event) => {
     const selectedFile = event.target.files?.[0];
     readAvatarFile(selectedFile);
@@ -2628,6 +2876,10 @@ function bindEvents() {
 
   refs.openNameModalBtn?.addEventListener("click", () => {
     setProfileNameModalOpen(true);
+  });
+
+  refs.openSettingsModalBtn?.addEventListener("click", () => {
+    setSettingsModalOpen(true);
   });
 
   refs.closeNameModal?.addEventListener("click", () => {
@@ -2651,6 +2903,12 @@ function bindEvents() {
   refs.profileAvatarModal?.addEventListener("click", (event) => {
     if (event.target === refs.profileAvatarModal) {
       setAvatarModalOpen(false);
+    }
+  });
+
+  refs.profileSettingsModal?.addEventListener("click", (event) => {
+    if (event.target === refs.profileSettingsModal) {
+      setSettingsModalOpen(false);
     }
   });
 

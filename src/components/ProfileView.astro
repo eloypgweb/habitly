@@ -22,6 +22,13 @@
           <button class="btn" id="choose-photo-btn" type="button">Elegir foto</button>
           <button class="btn" id="open-avatar-modal-btn" type="button">Elegir marco</button>
           <button class="btn btn-primary" id="open-name-modal-btn" type="button">Cambiar nombre</button>
+          <button class="btn btn-primary settings-launch-btn" id="open-settings-modal-btn" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.33 1.05V21a2 2 0 1 1-4 0v-.01a1.7 1.7 0 0 0-.33-1.05 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.05-.33H3a2 2 0 1 1 0-4h.01a1.7 1.7 0 0 0 1.05-.33 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6A1.7 1.7 0 0 0 10.33 3V3a2 2 0 1 1 4 0v.01a1.7 1.7 0 0 0 .33 1.05 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.28.31.49.67.6 1 .12.33.16.7.16 1.05V12c0 .35-.04.72-.16 1.05-.11.33-.32.69-.6 1Z"></path>
+            </svg>
+            <span>Cambiar ajustes</span>
+          </button>
           <button class="btn btn-danger" id="logout-btn" type="button">Cerrar sesion</button>
         </div>
       </div>
@@ -43,6 +50,62 @@
         <span id="profile-rank-badge" class="rank-badge">NOVATO</span>
         <div>
           <p id="profile-rank-name" class="rank-name">Novato</p>
+
+      <div id="profile-settings-modal" class="modal" aria-hidden="true">
+        <div class="modal-card settings-modal-card">
+          <header class="modal-header">
+            <h3>Ajustes</h3>
+            <button class="icon-btn" type="button" data-action="close-settings-modal" aria-label="Cerrar">X</button>
+          </header>
+          <p class="modal-copy">Tipografía, tema, mote y lo que venga después.</p>
+
+          <div class="settings-modal-grid">
+            <article class="setting-card">
+              <div class="setting-card-head">
+                <p class="equipment-label">Tipografía</p>
+                <span class="setting-preview">Global</span>
+              </div>
+              <label class="setting-field" for="profile-font-select">
+                <span>Fuente de la app</span>
+                <select id="profile-font-select" name="profile-font-select">
+                  <option value="sora">Sora</option>
+                  <option value="manrope">Manrope</option>
+                  <option value="plus-jakarta-sans">Plus Jakarta Sans</option>
+                  <option value="inter">Inter</option>
+                </select>
+              </label>
+              <p class="setting-note">Se aplica a toda la web y se guarda en tu perfil.</p>
+            </article>
+
+            <article class="setting-card">
+              <div class="setting-card-head">
+                <p class="equipment-label">Tema</p>
+                <span class="setting-preview">Visual</span>
+              </div>
+              <p class="setting-note">Abre el selector de temas para cambiar colores y contraste.</p>
+              <button class="btn btn-primary" type="button" data-action="open-themes-modal">Cambiar tema</button>
+            </article>
+
+            <article class="setting-card">
+              <div class="setting-card-head">
+                <p class="equipment-label">Mote</p>
+                <span class="setting-preview">Identidad</span>
+              </div>
+              <p class="setting-note">Abre tu colección de motes desbloqueados.</p>
+              <button class="btn btn-primary" type="button" data-action="open-motes-modal">Cambiar mote</button>
+            </article>
+
+            <article class="setting-card setting-card-muted">
+              <div class="setting-card-head">
+                <p class="equipment-label">Idioma</p>
+                <span class="setting-preview">Próximamente</span>
+              </div>
+              <p class="setting-note">Lo dejamos preparado para más adelante.</p>
+              <button class="btn" type="button" disabled>Disponible más adelante</button>
+            </article>
+          </div>
+        </div>
+      </div>
           <p id="profile-rank-xp" class="rank-xp">0 XP</p>
         </div>
       </div>
@@ -110,14 +173,12 @@
           <p class="equipment-label">Mote equipado</p>
           <h4 id="profile-equipped-mote-name" class="equipment-name">Sin mote</h4>
           <p id="profile-equipped-mote-detail" class="equipment-detail">Todavía no tienes motes desbloqueados.</p>
-          <button class="btn btn-primary" type="button" data-action="open-motes-modal">Cambiar mote</button>
         </article>
 
         <article class="equipment-card">
           <p class="equipment-label">Tema equipado</p>
           <h4 id="profile-equipped-theme-name" class="equipment-name">Ocean</h4>
           <p id="profile-equipped-theme-detail" class="equipment-detail">Tema base siempre disponible.</p>
-          <button class="btn btn-primary" type="button" data-action="open-themes-modal">Cambiar tema</button>
         </article>
       </div>
     </section>

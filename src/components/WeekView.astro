@@ -8,6 +8,36 @@
       <div class="section-actions">
         <button class="mini-btn" type="button" data-action="prev-week" aria-label="Semana anterior">←</button>
         <button class="mini-btn" type="button" data-action="next-week" aria-label="Semana siguiente">→</button>
+        <div class="week-export-menu" data-week-export-menu>
+          <button class="mini-btn week-export-trigger" type="button" data-action="toggle-week-export-menu" aria-haspopup="menu" aria-expanded="false" aria-label="Opciones de exportación">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <path d="M7 10l5-5 5 5"></path>
+              <path d="M12 5v12"></path>
+            </svg>
+            <span>Exportar</span>
+            <svg class="week-export-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          </button>
+          <div class="week-export-popover" role="menu" aria-label="Opciones de exportación">
+            <button class="week-export-option" type="button" data-action="export-week" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <path d="M7 10l5-5 5 5"></path>
+                <path d="M12 5v12"></path>
+              </svg>
+              <span>Compartir por WhatsApp</span>
+            </button>
+            <button class="week-export-option" type="button" data-action="copy-week" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                <rect x="4" y="4" width="11" height="11" rx="2"></rect>
+              </svg>
+              <span>Copiar texto</span>
+            </button>
+          </div>
+        </div>
       </div>
     </header>
     <header class="section-header week-filter-row">
