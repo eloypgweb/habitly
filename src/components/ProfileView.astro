@@ -51,61 +51,6 @@
         <div>
           <p id="profile-rank-name" class="rank-name">Novato</p>
 
-      <div id="profile-settings-modal" class="modal" aria-hidden="true">
-        <div class="modal-card settings-modal-card">
-          <header class="modal-header">
-            <h3>Ajustes</h3>
-            <button class="icon-btn" type="button" data-action="close-settings-modal" aria-label="Cerrar">X</button>
-          </header>
-          <p class="modal-copy">Tipografía, tema, mote y lo que venga después.</p>
-
-          <div class="settings-modal-grid">
-            <article class="setting-card">
-              <div class="setting-card-head">
-                <p class="equipment-label">Tipografía</p>
-                <span class="setting-preview">Global</span>
-              </div>
-              <label class="setting-field" for="profile-font-select">
-                <span>Fuente de la app</span>
-                <select id="profile-font-select" name="profile-font-select">
-                  <option value="sora">Sora</option>
-                  <option value="manrope">Manrope</option>
-                  <option value="plus-jakarta-sans">Plus Jakarta Sans</option>
-                  <option value="inter">Inter</option>
-                </select>
-              </label>
-              <p class="setting-note">Se aplica a toda la web y se guarda en tu perfil.</p>
-            </article>
-
-            <article class="setting-card">
-              <div class="setting-card-head">
-                <p class="equipment-label">Tema</p>
-                <span class="setting-preview">Visual</span>
-              </div>
-              <p class="setting-note">Abre el selector de temas para cambiar colores y contraste.</p>
-              <button class="btn btn-primary" type="button" data-action="open-themes-modal">Cambiar tema</button>
-            </article>
-
-            <article class="setting-card">
-              <div class="setting-card-head">
-                <p class="equipment-label">Mote</p>
-                <span class="setting-preview">Identidad</span>
-              </div>
-              <p class="setting-note">Abre tu colección de motes desbloqueados.</p>
-              <button class="btn btn-primary" type="button" data-action="open-motes-modal">Cambiar mote</button>
-            </article>
-
-            <article class="setting-card setting-card-muted">
-              <div class="setting-card-head">
-                <p class="equipment-label">Idioma</p>
-                <span class="setting-preview">Próximamente</span>
-              </div>
-              <p class="setting-note">Lo dejamos preparado para más adelante.</p>
-              <button class="btn" type="button" disabled>Disponible más adelante</button>
-            </article>
-          </div>
-        </div>
-      </div>
           <p id="profile-rank-xp" class="rank-xp">0 XP</p>
         </div>
       </div>
@@ -270,62 +215,6 @@
       </div>
     </div>
 
-    <div id="profile-frame-preview-modal" class="modal" aria-hidden="true">
-      <div class="modal-card preview-modal-card">
-        <header class="modal-header">
-          <h3>Vista del marco</h3>
-          <button class="icon-btn" type="button" data-action="close-frame-preview-modal" aria-label="Cerrar">X</button>
-        </header>
-        <div class="preview-modal-body">
-          <article id="profile-frame-preview-card" class="profile-card preview-card" data-avatar-skin="">
-            <div class="avatar-wrap">
-              <img id="profile-frame-preview-img" alt="Preview avatar" hidden />
-              <div id="profile-frame-preview-fallback" class="avatar-fallback">?</div>
-            </div>
-            <div class="preview-caption">
-              <p class="muted">Así se vería tu foto con el marco seleccionado.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </div>
-
-    <div id="profile-motes-modal" class="modal" aria-hidden="true">
-      <div class="modal-card cosmetics-modal-card">
-        <header class="modal-header">
-          <h3>Tus motes</h3>
-          <button class="icon-btn" type="button" data-action="close-motes-modal" aria-label="Cerrar">X</button>
-        </header>
-        <p class="modal-copy">Solo aparecen los motes que ya has desbloqueado.</p>
-        <div id="profile-motes-modal-list" class="motes-grid"></div>
-      </div>
-    </div>
-
-    <div id="profile-themes-modal" class="modal" aria-hidden="true">
-      <div class="modal-card cosmetics-modal-card">
-        <header class="modal-header">
-          <h3>Tus temas</h3>
-          <button class="icon-btn" type="button" data-action="close-themes-modal" aria-label="Cerrar">X</button>
-        </header>
-        <p class="modal-copy">Solo aparecen los temas que tienes disponibles.</p>
-        <div class="theme-picker theme-picker-modal">
-          <button class="theme-btn" type="button" data-action="set-theme" data-theme="ocean">
-            <span class="theme-dot ocean"></span>
-            Ocean
-          </button>
-          <button class="theme-btn" type="button" data-action="set-theme" data-theme="sunset">
-            <span class="theme-dot sunset"></span>
-            Sunset
-          </button>
-          <button class="theme-btn" type="button" data-action="set-theme" data-theme="forest">
-            <span class="theme-dot forest"></span>
-            Forest
-          </button>
-          <button class="theme-btn" type="button" data-action="set-theme" data-theme="aurora">
-            <span class="theme-dot aurora"></span>
-            Aurora
-          </button>
-          <button class="theme-btn" type="button" data-action="set-theme" data-theme="hell">
             <span class="theme-dot hell"></span>
             Hell
           </button>

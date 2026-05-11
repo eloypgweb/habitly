@@ -1506,6 +1506,26 @@ body.modal-open {
 
 .settings-modal-card {
   width: min(720px, 100%);
+  margin: auto;
+  max-height: min(86dvh, 760px);
+}
+
+#profile-settings-modal {
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 70;
+}
+
+#profile-settings-modal .modal-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
 }
 
 .settings-modal-grid {

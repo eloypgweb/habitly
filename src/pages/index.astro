@@ -61,6 +61,62 @@ import "../styles/app.css";
 			</section>
 		</main>
 
+		<div id="profile-settings-modal" class="modal" aria-hidden="true">
+			<div class="modal-card settings-modal-card">
+				<header class="modal-header">
+					<h3>Ajustes</h3>
+					<button class="icon-btn" type="button" data-action="close-settings-modal" aria-label="Cerrar">X</button>
+				</header>
+				<p class="modal-copy">Tipografía, tema, mote y lo que venga después.</p>
+
+				<div class="settings-modal-grid">
+					<article class="setting-card">
+						<div class="setting-card-head">
+							<p class="equipment-label">Tipografía</p>
+							<span class="setting-preview">Global</span>
+						</div>
+						<label class="setting-field" for="profile-font-select">
+							<span>Fuente de la app</span>
+							<select id="profile-font-select" name="profile-font-select">
+								<option value="sora">Sora</option>
+								<option value="manrope">Manrope</option>
+								<option value="plus-jakarta-sans">Plus Jakarta Sans</option>
+								<option value="inter">Inter</option>
+							</select>
+						</label>
+						<p class="setting-note">Se aplica a toda la web y se guarda en tu perfil.</p>
+					</article>
+
+					<article class="setting-card">
+						<div class="setting-card-head">
+							<p class="equipment-label">Tema</p>
+							<span class="setting-preview">Visual</span>
+						</div>
+						<p class="setting-note">Abre el selector de temas para cambiar colores y contraste.</p>
+						<button class="btn btn-primary" type="button" data-action="open-themes-modal">Cambiar tema</button>
+					</article>
+
+					<article class="setting-card">
+						<div class="setting-card-head">
+							<p class="equipment-label">Mote</p>
+							<span class="setting-preview">Identidad</span>
+						</div>
+						<p class="setting-note">Abre tu colección de motes desbloqueados.</p>
+						<button class="btn btn-primary" type="button" data-action="open-motes-modal">Cambiar mote</button>
+					</article>
+
+					<article class="setting-card setting-card-muted">
+						<div class="setting-card-head">
+							<p class="equipment-label">Idioma</p>
+							<span class="setting-preview">Próximamente</span>
+						</div>
+						<p class="setting-note">Lo dejamos preparado para más adelante.</p>
+						<button class="btn" type="button" disabled>Disponible más adelante</button>
+					</article>
+				</div>
+			</div>
+		</div>
+
 		<TaskModal />
 
 		<script>
