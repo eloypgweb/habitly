@@ -215,6 +215,44 @@
       </div>
     </div>
 
+    <div id="profile-motes-modal" class="modal" aria-hidden="true">
+      <div class="modal-card cosmetics-modal-card">
+        <header class="modal-header">
+          <h3>Tus motes</h3>
+          <button class="icon-btn" type="button" data-action="close-motes-modal" aria-label="Cerrar">X</button>
+        </header>
+        <p class="modal-copy">Equipa un mote desbloqueado en el pase de batalla.</p>
+        <div id="profile-motes-modal-list" class="motes-grid">
+          <p class='empty-message'>Reclama un mote en el pase de batalla para poder equiparlo.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="profile-themes-modal" class="modal" aria-hidden="true">
+      <div class="modal-card cosmetics-modal-card theme-picker-modal">
+        <header class="modal-header">
+          <h3>Elige tema</h3>
+          <button class="icon-btn" type="button" data-action="close-themes-modal" aria-label="Cerrar">X</button>
+        </header>
+        <p class="modal-copy">Selecciona un tema disponible para tu perfil.</p>
+        <div class="theme-picker">
+          <button class="theme-btn" type="button" data-action="set-theme" data-theme="ocean">
+            <span class="theme-dot ocean"></span>
+            Ocean
+          </button>
+          <button class="theme-btn" type="button" data-action="set-theme" data-theme="sunset">
+            <span class="theme-dot sunset"></span>
+            Sunset
+          </button>
+          <button class="theme-btn" type="button" data-action="set-theme" data-theme="forest">
+            <span class="theme-dot forest"></span>
+            Forest
+          </button>
+          <button class="theme-btn" type="button" data-action="set-theme" data-theme="aurora">
+            <span class="theme-dot aurora"></span>
+            Aurora
+          </button>
+          <button class="theme-btn" type="button" data-action="set-theme" data-theme="hell">
             <span class="theme-dot hell"></span>
             Hell
           </button>
@@ -223,6 +261,24 @@
             Heaven
           </button>
         </div>
+      </div>
+    </div>
+
+    <div id="profile-frame-preview-modal" class="modal" aria-hidden="true">
+      <div id="profile-frame-preview-card" class="modal-card confirm-card" data-avatar-skin="classic">
+        <header class="modal-header">
+          <h3>Vista de marco</h3>
+          <button class="icon-btn" type="button" data-action="close-frame-preview-modal" aria-label="Cerrar">X</button>
+        </header>
+        <p class="modal-copy">Previsualiza como queda tu foto con el marco seleccionado.</p>
+        <div class="avatar-wrap">
+          <img id="profile-frame-preview-img" alt="Vista previa del avatar" hidden />
+          <div id="profile-frame-preview-fallback" class="avatar-fallback" data-avatar-skin="classic">?</div>
+        </div>
+        <footer class="modal-actions">
+          <button class="btn" type="button" data-action="clear-frame-preview">Quitar preview</button>
+          <button class="btn btn-primary" type="button" data-action="close-frame-preview-modal">Cerrar</button>
+        </footer>
       </div>
     </div>
 

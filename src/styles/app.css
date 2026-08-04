@@ -1517,6 +1517,15 @@ body.modal-open {
   z-index: 70;
 }
 
+#profile-motes-modal,
+#profile-themes-modal {
+  z-index: 80;
+}
+
+#profile-frame-preview-modal {
+  z-index: 90;
+}
+
 #profile-settings-modal .modal-card {
   position: fixed;
   top: 50%;
@@ -2086,6 +2095,14 @@ body.modal-open {
   margin-top: 10px;
   display: grid;
   gap: 8px;
+}
+
+#profile-motes-modal-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  align-content: start;
 }
 
 .mote-card {
